@@ -47,7 +47,7 @@ export const userFeatureApi = {
    */
   getUserFeature: async (userId) => {
     try {
-      const response = await api.get(`/user-feature/user/${userId}`);
+      const response = await api.get('/user-feature/user', { params: { userId } });
       return response.data;
     } catch (error) {
       console.error('获取用户信息失败:', error);
