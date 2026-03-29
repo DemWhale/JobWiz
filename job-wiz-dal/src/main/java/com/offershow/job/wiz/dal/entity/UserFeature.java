@@ -81,6 +81,16 @@ public class UserFeature implements Serializable {
     private String description;
 
     /**
+     * 头像 URL
+     */
+    private String avatarUrl;
+
+    /**
+     * 扩展字段（JSON 格式存储额外信息）
+     */
+    private String extendFields;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;
