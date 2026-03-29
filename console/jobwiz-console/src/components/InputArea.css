@@ -1,0 +1,98 @@
+.input-area {
+  padding: 20px 30px;
+  background: white;
+  border-top: 1px solid #eaeaea;
+}
+
+.function-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.func-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.func-btn:hover {
+  background: #eaeaea;
+}
+
+.func-btn.highlight {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.func-btn.highlight:hover {
+  background: linear-gradient(135deg, #9b7be8 0%, #7a4fd6 100%);
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: #f9f9ff;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  padding: 12px 16px;
+  transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #a78bfa;
+}
+
+.input-wrapper textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: none;
+  font-size: 15px;
+  color: #333;
+  font-family: inherit;
+  max-height: 150px;
+  min-height: 24px;
+}
+
+.input-wrapper textarea::placeholder {
+  color: #999;
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.1);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
