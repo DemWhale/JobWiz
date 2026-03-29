@@ -121,7 +121,9 @@ public class JobWizMybatisPlusConfig {
     @Bean(name = "jobWizGlobalConfig")
     public GlobalConfig jobWizGlobalConfig() {
         GlobalConfig globalConfig = new GlobalConfig();
-        globalConfig.setDbConfig(new GlobalConfig.DbConfig().setTablePrefix("t_"));
+        globalConfig.setDbConfig(new GlobalConfig.DbConfig()
+                .setIdType(com.baomidou.mybatisplus.annotation.IdType.AUTO)
+                .setTableUnderline(true));
         return globalConfig;
     }
 
