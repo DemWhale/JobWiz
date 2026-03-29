@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import './UserAvatar.css';
 
-const UserAvatar = () => {
+const UserAvatar = ({ userId, userFeature, onNavigateToProfile }) => {
   const [showUserInfo, setShowUserInfo] = useState(false);
 
   const handleAvatarClick = () => {
-    setShowUserInfo(!showUserInfo);
+    // 如果有导航回调，则跳转到个人中心页面
+    if (onNavigateToProfile) {
+      onNavigateToProfile();
+    } else {
+      setShowUserInfo(!showUserInfo);
+    }
   };
 
   return (
@@ -19,26 +24,26 @@ const UserAvatar = () => {
           <div className="user-info-header">
             <img src="/avatar.svg" alt="用户头像" />
             <div className="user-name">
-              <h3>张三</h3>
-              <p>计算机科学与技术 · 本科</p>
+              <h3>{userFeature?.nickname || `用户${userId}`}</h3>
+              <p>{userFeature?.major || '未设置'} · {userFeature?.education || '未设置'}</p>
             </div>
           </div>
           <div className="user-info-content">
             <div className="info-item">
               <span className="label">意向城市：</span>
-              <span className="value">北京、上海</span>
+              <span className="value">{userFeature?.targetCity || '未设置'}</span>
             </div>
             <div className="info-item">
               <span className="label">期望岗位：</span>
-              <span className="value">Java 开发工程师</span>
+              <span className="value">{userFeature?.targetPosition || '未设置'}</span>
             </div>
             <div className="info-item">
-              <span className="label">期望薪资：</span>
-              <span className="value">15-20k</span>
+              <span className="label">毕业院校：</span>
+              <span className="value">{userFeature?.school || '未设置'}</span>
             </div>
             <div className="info-item">
-              <span className="label">工作年限：</span>
-              <span className="value">应届毕业生</span>
+              <span className="label">专业：</span>
+              <span className="value">{userFeature?.major || '未设置'}</span>
             </div>
           </div>
           <button className="close-btn" onClick={() => setShowUserInfo(false)}>

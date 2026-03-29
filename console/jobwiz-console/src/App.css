@@ -71,3 +71,14 @@
   background: white;
   border-top: 1px solid #eaeaea;
 }
+
+.app-loading,
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 16px;
+  color: #666;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+}

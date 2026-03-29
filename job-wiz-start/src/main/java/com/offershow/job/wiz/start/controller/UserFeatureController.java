@@ -5,7 +5,6 @@ import com.offershow.job.wiz.service.UserFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,8 +30,8 @@ public class UserFeatureController {
      * @param userId 用户 ID
      * @return 用户特征信息
      */
-    @GetMapping("/user/{userId}")
-    public UserFeature getByUserId(@PathVariable Long userId) {
+    @GetMapping("/user")
+    public UserFeature getByUserId(@RequestParam("userId") Long userId) {
         return userFeatureService.getByUserId(userId);
     }
 
@@ -93,8 +92,8 @@ public class UserFeatureController {
      * @param id 主键 ID
      * @return 是否成功
      */
-    @DeleteMapping("/{id}")
-    public boolean deleteById(@PathVariable Long id) {
+    @DeleteMapping("/delete")
+    public boolean deleteById(@RequestParam("id") Long id) {
         return userFeatureService.removeById(id);
     }
 }
