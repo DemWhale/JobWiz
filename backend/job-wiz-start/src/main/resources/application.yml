@@ -1,3 +1,9 @@
 spring:
   profiles:
     active: testing
+
+agentscope:
+  core:
+    model:
+      dashscope:
+        api-key: your-api-key-here
