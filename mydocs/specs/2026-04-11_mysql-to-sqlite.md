@@ -50,8 +50,10 @@
 | 7 | `backend/job-wiz-start/.../resources/application-testing.yml` | 新建 | 本地测试 → SQLite（`jdbc:sqlite:./database/job_wiz.db`） |
 | 8 | `backend/job-wiz-start/.../resources/application-pre.yml` | 新建 | 预发布 → MySQL |
 | 9 | `backend/job-wiz-start/.../resources/application-product.yml` | 新建 | 生产 → MySQL（密码用环境变量） |
-| 10 | `database/user_feature_sqlite.sql` | 新建 | SQLite DDL |
-| 11 | `database/user_feature_data_sqlite.sql` | 新建 | SQLite DML |
+| 10 | `database/sqlite/user_feature.sql` | 新建 | SQLite DDL（开发默认） |
+| 11 | `database/sqlite/user_feature_data.sql` | 新建 | SQLite DML |
+| 12 | `database/mysql/user_feature.sql` | 迁移 | MySQL DDL |
+| 13 | `database/mysql/user_feature_data.sql` | 迁移 | MySQL DML |
 
 ### 5.2 环境与数据库映射
 
@@ -99,3 +101,4 @@
 | 2026-04-11 | Fix | 修复启动问题：排除 DataSourceAutoConfiguration、HikariCP 适配 SQLite（后被用户回退） |
 | 2026-04-11 | Review | Spec 全面同步至代码实际状态 |
 | 2026-04-11 | Execute | 数据目录 `./data/` → `./database/`；SQL 脚本从 resources/sql 移至 `database/` 目录 |
+| 2026-04-11 | Execute | database 按 sqlite/mysql 分目录；SQLite 文件去掉后缀；.gitignore 忽略 *.db 文件 |
