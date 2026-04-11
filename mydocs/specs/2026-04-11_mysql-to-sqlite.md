@@ -47,11 +47,11 @@
 | 4 | `backend/job-wiz-dal/.../config/JobWizMybatisPlusConfig.java` | 改 | 添加 `@Profile({"pre", "product"})`，注释更新为 MySQL |
 | 5 | `backend/job-wiz-dal/.../config/JobWizSqliteConfig.java` | 新建 | `@Profile("testing")`，`DbType.SQLITE`，SQLite 连接池（maxPool=2） |
 | 6 | `backend/job-wiz-start/.../resources/application.yml` | 改 | 公共配置 + `spring.profiles.active: testing` |
-| 7 | `backend/job-wiz-start/.../resources/application-testing.yml` | 新建 | 本地测试 → SQLite（`jdbc:sqlite:./data/job_wiz.db`） |
+| 7 | `backend/job-wiz-start/.../resources/application-testing.yml` | 新建 | 本地测试 → SQLite（`jdbc:sqlite:./database/job_wiz.db`） |
 | 8 | `backend/job-wiz-start/.../resources/application-pre.yml` | 新建 | 预发布 → MySQL |
 | 9 | `backend/job-wiz-start/.../resources/application-product.yml` | 新建 | 生产 → MySQL（密码用环境变量） |
-| 10 | `backend/job-wiz-dal/.../resources/sql/user_feature_sqlite.sql` | 新建 | SQLite DDL |
-| 11 | `backend/job-wiz-dal/.../resources/sql/user_feature_data_sqlite.sql` | 新建 | SQLite DML |
+| 10 | `database/user_feature_sqlite.sql` | 新建 | SQLite DDL |
+| 11 | `database/user_feature_data_sqlite.sql` | 新建 | SQLite DML |
 
 ### 5.2 环境与数据库映射
 
@@ -67,7 +67,7 @@
 2. **连接池**：SQLite 单写者模型，`maxPool=2`, `minIdle=1`
 3. **MyBatis Plus**：`DbType.SQLITE` 内置分页支持，`IdType.AUTO` 兼容
 4. **SQLite 不支持 `ON UPDATE CURRENT_TIMESTAMP`** → Service 层已手动设置 updateTime，无需额外处理
-5. **数据文件**：`./data/job_wiz.db`
+5. **数据文件**：`./database/job_wiz.db`
 6. **Profile 隔离**：`@Profile` 确保同一时刻只激活一个数据源配置类
 7. **生产环境安全**：`application-product.yml` 使用 `${DB_USERNAME}` / `${DB_PASSWORD}` 环境变量
 
@@ -76,8 +76,8 @@
 | 风险 | 等级 | 缓解 |
 |------|------|------|
 | SQLite 并发写性能有限 | 低 | 当前为单用户本地测试，可接受 |
-| `./data/` 目录需手动创建 | 中 | 首次使用 SQLite 前需 `mkdir -p data` |
-| 启动时需先执行 SQLite DDL 建表 | 中 | 手动执行 `user_feature_sqlite.sql` |
+| `./database/` 目录需手动创建 | 中 | 首次使用 SQLite 前需 `mkdir -p database` |
+| 启动时需先执行 SQLite DDL 建表 | 中 | 手动执行 `database/user_feature_sqlite.sql` |
 
 ## §6 Open Questions
 
@@ -98,3 +98,4 @@
 | 2026-04-11 | Execute | YAML 按环境重组：testing(SQLite)/pre(MySQL)/product(MySQL)，Profile 映射同步更新 |
 | 2026-04-11 | Fix | 修复启动问题：排除 DataSourceAutoConfiguration、HikariCP 适配 SQLite（后被用户回退） |
 | 2026-04-11 | Review | Spec 全面同步至代码实际状态 |
+| 2026-04-11 | Execute | 数据目录 `./data/` → `./database/`；SQL 脚本从 resources/sql 移至 `database/` 目录 |
