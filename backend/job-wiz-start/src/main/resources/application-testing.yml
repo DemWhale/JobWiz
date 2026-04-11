@@ -1,0 +1,5 @@
+# 本地测试环境 - 使用 SQLite
+spring:
+  datasource:
+    url: jdbc:sqlite:./data/job_wiz.db
+    driver-class-name: org.sqlite.JDBC
