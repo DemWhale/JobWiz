@@ -25,7 +25,7 @@ import javax.sql.DataSource;
  * 手动管理 DataSource 和 SqlSessionFactory
  */
 @Configuration
-@Profile("sqlite")
+@Profile("testing")
 @MapperScan(
         basePackages = "com.offershow.job.wiz.dal.mapper",
         annotationClass = org.apache.ibatis.annotations.Mapper.class,

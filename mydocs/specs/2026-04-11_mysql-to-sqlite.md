@@ -120,3 +120,5 @@
 |------|------|------|
 | 2026-04-11 | Research | 首版 Spec，完成影响面分析与技术决策 |
 | 2026-04-11 | Plan | 方案调整：保留 MySQL 配置，新增 SQLite 配置，通过 Spring Profile 可切换；产出 9 步 Checklist |
+| 2026-04-11 | Execute | 完成 C1-C9 全部执行 |
+| 2026-04-11 | Execute | YAML 按环境重组：testing(SQLite)/pre(MySQL)/product(MySQL)，Profile 映射同步更新 |
