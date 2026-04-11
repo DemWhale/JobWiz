@@ -7,3 +7,7 @@ agentscope:
     model:
       dashscope:
         api-key: sk-3a90d3037afa4c6285e3214c5899c9c0
+  agui:
+    path-prefix: /agui
+    cors-enabled: true
+    server-side-memory: true

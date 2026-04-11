@@ -1,0 +1,47 @@
+### 测试基础信息修改 Agent
+POST http://localhost:8080/agui/run/baseinfo
+Content-Type: application/json
+
+{
+  "threadId": "test-baseinfo-123",
+  "runId": "run-baseinfo-123",
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "content": "把姓名改为张三，邮箱改为 zhangsan@example.com"
+    }
+  ]
+}
+
+### 测试求职意向修改 Agent
+POST http://localhost:8080/agui/run/interest
+Content-Type: application/json
+
+{
+  "threadId": "test-interest-{{{{$timestamp}}}}",
+  "runId": "run-interest-{{{{$timestamp}}}}",
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "content": "我想找Java开发工程师的工作，目标城市是杭州"
+    }
+  ]
+}
+
+### 测试教育背景修改 Agent
+POST http://localhost:8080/agui/run/edubackground
+Content-Type: application/json
+
+{
+  "threadId": "test-edubackground-{{{{$timestamp}}}}",
+  "runId": "run-edubackground-{{{{$timestamp}}}}",
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "content": "我的学校是浙江大学，学历是硕士"
+    }
+  ]
+}
