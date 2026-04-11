@@ -6,4 +6,4 @@ agentscope:
   core:
     model:
       dashscope:
-        api-key: your-api-key-here
+        api-key: sk-3a90d3037afa4c6285e3214c5899c9c0
