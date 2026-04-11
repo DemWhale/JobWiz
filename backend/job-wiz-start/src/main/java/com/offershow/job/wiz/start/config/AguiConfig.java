@@ -1,4 +1,4 @@
-package com.offershow.job.wiz.service.config;
+package com.offershow.job.wiz.start.config;
 
 import com.offershow.job.wiz.common.agents.BaseInfoAgent;
 import com.offershow.job.wiz.common.agents.EduBackgroundAgent;
