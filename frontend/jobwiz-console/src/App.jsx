@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
-import UserAvatar from './components/UserAvatar';
-import ChatWindow from './components/ChatWindow';
-import InputArea from './components/InputArea';
+import ResumeList from './pages/ResumeList';
+import Home from './pages/Home';
+import Sidebar from './components/Sidebar';
 import { userFeatureApi } from './services/api';
 import './App.css';
 
@@ -92,41 +92,18 @@ function App() {
     checkLoginStatus();
   }, []);
 
-  // 主页组件（需要登录）
-  const HomePage = () => {
-    const handleQuickActionSelect = (action) => {
-      console.log('Selected quick action:', action.text);
-      // TODO: 后续实现 AI 对话功能
-    };
-
-    const handleSendMessage = (message) => {
-      console.log('User sent message:', message);
-      // TODO: 后续实现 AI 对话功能
-    };
-
+  // 布局外壳（需要登录）— 左侧边栏 + 右侧内容
+  const AppLayout = ({ children }) => {
     return (
-      <div className="app-container">
-        <header className="app-header">
-          <div className="header-left">
-            <UserAvatar userId={userId} userFeature={userFeature} onNavigateToProfile={() => navigate('/profile')} />
-            <h1 className="app-title">智聘鼠</h1>
-          </div>
-          <nav className="header-nav">
-            <a href="#" className="nav-item">校招</a>
-            <a href="#" className="nav-item">简历</a>
-            <div className="nav-dots" onClick={handleLogout} style={{ cursor: 'pointer' }}>
-              <span>退出</span>
-            </div>
-          </nav>
-        </header>
-
+      <div className="app-layout">
+        <Sidebar
+          userFeature={userFeature}
+          credits={59}
+          onLogout={handleLogout}
+        />
         <main className="app-main">
-          <ChatWindow onQuickActionSelect={handleQuickActionSelect} />
+          {children}
         </main>
-
-        <footer className="app-footer">
-          <InputArea onSend={handleSendMessage} />
-        </footer>
       </div>
     );
   };
@@ -141,7 +118,7 @@ function App() {
       navigate('/login', { replace: true });
       return null;
     }
-    return children;
+    return <AppLayout>{children}</AppLayout>;
   };
 
   if (isLoading) {
@@ -163,11 +140,35 @@ function App() {
           </ProtectedRoute>
         } 
       />
+      <Route
+        path="/resumes"
+        element={
+          <ProtectedRoute>
+            <ResumeList userId={userId} />
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/resume/new" 
+        element={
+          <ProtectedRoute>
+            <div className="placeholder-page">新建简历（Spec C）</div>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/resume/edit/:id" 
+        element={
+          <ProtectedRoute>
+            <div className="placeholder-page">简历编辑（Spec E）</div>
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/" 
         element={
           <ProtectedRoute>
-            <HomePage />
+            <Home userId={userId} userFeature={userFeature} />
           </ProtectedRoute>
         } 
       />

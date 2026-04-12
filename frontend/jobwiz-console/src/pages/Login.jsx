@@ -31,8 +31,8 @@ const Login = ({ onLogin }) => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-title">智聘鼠</h1>
-          <p className="login-subtitle">智能招聘助手</p>
+          <h1 className="login-title">OfferShow</h1>
+          <p className="login-subtitle">智能求职助手</p>
         </div>
 
         <form onSubmit={handleLogin} className="login-form">

@@ -1,31 +1,31 @@
 import './QuickActions.css';
 
-const QuickActions = ({ onSelect }) => {
-  const quickActions = [
-    { id: 1, text: '根据专业找适合的工作机会。', icon: '🎯' },
-    { id: 2, text: '热门行业有哪些？', icon: '🔥' },
-    { id: 3, text: '已有明确岗位意向，给我一些求职建议。', icon: '💡' },
-    { id: 4, text: '推荐一些热门校招岗位。', icon: '⭐' },
-    { id: 5, text: '对专业要求较低的工作机会。', icon: '✨' }
-  ];
+const quickActionItems = [
+  { id: 'resume-diagnosis', icon: '📝', label: '简历诊断' },
+  { id: 'resume-translate', icon: '🌐', label: '简历翻译' },
+  { id: 'campus-recruit', icon: '🎯', label: '校招推荐' },
+  { id: 'interview-guide', icon: '🧠', label: '面试指导' },
+  { id: 'career-plan', icon: '📈', label: '职业规划' },
+];
 
-  const handleClick = (action) => {
+const QuickActions = ({ onSelect }) => {
+  const handleClick = (actionType) => {
     if (onSelect) {
-      onSelect(action);
+      onSelect(actionType);
     }
   };
 
   return (
     <div className="quick-actions">
-      {quickActions.map((action) => (
-        <div 
-          key={action.id} 
-          className="quick-action-item"
-          onClick={() => handleClick(action)}
+      {quickActionItems.map((item) => (
+        <button
+          key={item.id}
+          className="quick-action-btn"
+          onClick={() => handleClick(item.id)}
         >
-          <span className="action-text">{action.text}</span>
-          <span className="action-icon">→</span>
-        </div>
+          <span className="quick-action-icon">{item.icon}</span>
+          <span className="quick-action-label">{item.label}</span>
+        </button>
       ))}
     </div>
   );

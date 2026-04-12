@@ -5,16 +5,51 @@
 }
 
 :root {
-  --primary-color: #a78bfa;
-  --primary-hover: #8b5cf6;
-  --text-primary: #333;
-  --text-secondary: #666;
-  --text-tertiary: #999;
+  /* 品牌主色（设计稿蓝色主题） */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #eff6ff;
+  --color-primary-bg: #dbeafe;
+
+  /* 功能色 */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* 文本色 */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* 背景色 */
   --bg-primary: #ffffff;
-  --bg-secondary: #f9f9ff;
-  --border-color: #eaeaea;
-  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  /* 边框色 */
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* 侧边栏 */
+  --sidebar-width: 72px;
+  --sidebar-bg: #1e293b;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* 兼容旧变量 */
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-page: #f8fafc;
   
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

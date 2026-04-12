@@ -1,39 +1,35 @@
 .quick-actions {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
-.quick-action-item {
+.quick-action-btn {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background 0.2s;
-  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.quick-action-item:last-child {
-  border-bottom: none;
+.quick-action-btn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-.quick-action-item:hover {
-  background: #f9f9ff;
+.quick-action-icon {
+  font-size: 14px;
 }
 
-.action-text {
-  font-size: 15px;
-  color: #333;
-  flex: 1;
-}
-
-.action-icon {
-  font-size: 18px;
-  color: #a78bfa;
-  margin-left: 10px;
+.quick-action-label {
+  font-weight: 500;
 }

@@ -29,12 +29,12 @@
 }
 
 .func-btn.highlight {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
   color: white;
 }
 
 .func-btn.highlight:hover {
-  background: linear-gradient(135deg, #9b7be8 0%, #7a4fd6 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
 }
 
 .btn-icon {
@@ -53,7 +53,7 @@
 }
 
 .input-wrapper:focus-within {
-  border-color: #a78bfa;
+  border-color: #2563eb;
 }
 
 .input-wrapper textarea {
@@ -77,7 +77,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
   border: none;
   color: white;
   font-size: 20px;

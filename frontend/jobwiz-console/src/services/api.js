@@ -86,4 +86,82 @@ export const userFeatureApi = {
   }
 };
 
+// 简历 API 服务
+export const resumeApi = {
+  /**
+   * 根据用户 ID 获取简历列表
+   * @param {number|string} userId - 用户 ID
+   * @returns {Promise<Array>} 简历列表
+   */
+  listByUserId: async (userId) => {
+    try {
+      const response = await api.get('/resume/list', { params: { userId } });
+      return response.data;
+    } catch (error) {
+      console.error('获取简历列表失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 根据 ID 获取简历
+   * @param {number|string} id - 简历 ID
+   * @returns {Promise<Object>} 简历信息
+   */
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/resume/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('获取简历失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 创建简历
+   * @param {Object} data - 简历数据
+   * @returns {Promise<Object>} 创建后的简历
+   */
+  create: async (data) => {
+    try {
+      const response = await api.post('/resume/create', data);
+      return response.data;
+    } catch (error) {
+      console.error('创建简历失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 更新简历
+   * @param {Object} data - 简历数据
+   * @returns {Promise<boolean>} 操作结果
+   */
+  update: async (data) => {
+    try {
+      const response = await api.put('/resume/update', data);
+      return response.data;
+    } catch (error) {
+      console.error('更新简历失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 删除简历
+   * @param {number|string} id - 简历 ID
+   * @returns {Promise<boolean>} 操作结果
+   */
+  delete: async (id) => {
+    try {
+      const response = await api.delete(`/resume/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('删除简历失败:', error);
+      throw error;
+    }
+  }
+};
+
 export default api;

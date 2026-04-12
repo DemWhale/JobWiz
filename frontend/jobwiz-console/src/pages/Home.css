@@ -1,0 +1,16 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.home-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.home-footer {
+  padding: 16px 32px 24px;
+  background: var(--bg-secondary);
+}

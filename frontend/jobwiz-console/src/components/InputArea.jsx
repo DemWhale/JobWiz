@@ -44,7 +44,7 @@ const InputArea = ({ onSend }) => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="请输入..."
+          placeholder="告诉 OfferShow AI 你的需求..."
           rows={1}
         />
         <button className="send-btn" onClick={handleSend}>
