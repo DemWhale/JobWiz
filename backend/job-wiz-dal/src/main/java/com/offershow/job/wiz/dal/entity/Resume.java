@@ -78,10 +78,10 @@ public class Resume implements Serializable {
     /**
      * 创建时间
      */
-    private Date createdAt;
+    private Date gmtCreate;
 
     /**
-     * 更新时间
+     * 修改时间
      */
-    private Date updatedAt;
+    private Date gmtModified;
 }

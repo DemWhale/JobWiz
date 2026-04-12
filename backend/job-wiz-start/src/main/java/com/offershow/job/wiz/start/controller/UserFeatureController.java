@@ -1,5 +1,7 @@
 package com.offershow.job.wiz.start.controller;
 
+import com.offershow.job.wiz.common.enums.CodeEnum;
+import com.offershow.job.wiz.common.model.ApiResponse;
 import com.offershow.job.wiz.dal.entity.UserFeature;
 import com.offershow.job.wiz.service.UserFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,76 +26,43 @@ public class UserFeatureController {
     @Autowired
     private UserFeatureService userFeatureService;
 
-    /**
-     * 根据用户 ID 获取用户特征
-     *
-     * @param userId 用户 ID
-     * @return 用户特征信息
-     */
     @GetMapping("/user")
-    public UserFeature getByUserId(@RequestParam("userId") Long userId) {
-        return userFeatureService.getByUserId(userId);
+    public ApiResponse<UserFeature> getByUserId(@RequestParam("userId") Long userId) {
+        UserFeature feature = userFeatureService.getByUserId(userId);
+        return feature != null ? ApiResponse.ok(feature) : ApiResponse.fail(CodeEnum.PARAM_ERROR.getCode(), "用户信息不存在");
     }
 
-    /**
-     * 保存或更新用户特征
-     *
-     * @param userFeature 用户特征信息
-     * @return 是否成功
-     */
     @PostMapping("/save-or-update")
-    public boolean saveOrUpdate(@RequestBody UserFeature userFeature) {
-        return userFeatureService.saveOrUpdateUserFeature(userFeature);
+    public ApiResponse<Boolean> saveOrUpdate(@RequestBody UserFeature userFeature) {
+        boolean result = userFeatureService.saveOrUpdateUserFeature(userFeature);
+        return result ? ApiResponse.ok(result) : ApiResponse.fail("保存失败");
     }
 
-    /**
-     * 插入用户特征
-     *
-     * @param userFeature 用户特征信息
-     * @return 是否成功
-     */
     @PostMapping("/insert")
-    public boolean insert(@RequestBody UserFeature userFeature) {
-        return userFeatureService.insertUserFeature(userFeature);
+    public ApiResponse<Boolean> insert(@RequestBody UserFeature userFeature) {
+        boolean result = userFeatureService.insertUserFeature(userFeature);
+        return result ? ApiResponse.ok(result) : ApiResponse.fail("插入失败");
     }
 
-    /**
-     * 更新用户特征
-     *
-     * @param userFeature 用户特征信息
-     * @return 是否成功
-     */
     @PutMapping("/update")
-    public boolean update(@RequestBody UserFeature userFeature) {
-        return userFeatureService.updateUserFeature(userFeature);
+    public ApiResponse<Boolean> update(@RequestBody UserFeature userFeature) {
+        boolean result = userFeatureService.updateUserFeature(userFeature);
+        return result ? ApiResponse.ok(result) : ApiResponse.fail("更新失败");
     }
 
-    /**
-     * 根据条件查询用户特征列表
-     *
-     * @param userId         用户 ID
-     * @param targetPosition 意向岗位
-     * @param targetCity     意向城市
-     * @param education      学历
-     * @return 用户特征列表
-     */
     @GetMapping("/list")
-    public List<UserFeature> list(
+    public ApiResponse<List<UserFeature>> list(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String targetPosition,
             @RequestParam(required = false) String targetCity,
             @RequestParam(required = false) String education) {
-        return userFeatureService.listUserFeatures(userId, targetPosition, targetCity, education);
+        List<UserFeature> list = userFeatureService.listUserFeatures(userId, targetPosition, targetCity, education);
+        return ApiResponse.ok(list);
     }
 
-    /**
-     * 根据 ID 删除用户特征
-     *
-     * @param id 主键 ID
-     * @return 是否成功
-     */
     @DeleteMapping("/delete")
-    public boolean deleteById(@RequestParam("id") Long id) {
-        return userFeatureService.removeById(id);
+    public ApiResponse<Boolean> deleteById(@RequestParam("id") Long id) {
+        boolean result = userFeatureService.removeById(id);
+        return result ? ApiResponse.ok(result) : ApiResponse.fail("删除失败");
     }
 }

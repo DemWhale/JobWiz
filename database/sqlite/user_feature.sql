@@ -1,24 +1,23 @@
 -- 用户特征信息表（SQLite 版本）
 -- 字段类型与 UserFeature 实体一一对应
--- 日期字段统一存为 TEXT，使用 Jackson 序列化格式：yyyy-MM-dd / yyyy-MM-dd HH:mm:ss
 CREATE TABLE IF NOT EXISTS user_feature
 (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,  -- Long / IdType.AUTO
-    user_id         INTEGER,                            -- Long
-    nickname        TEXT,                               -- String
-    school          TEXT,                               -- String
-    education       TEXT,                               -- String
-    major           TEXT,                               -- String
-    gender          TEXT,                               -- String
-    graduation_date TEXT,                               -- Date (Jackson 格式: yyyy-MM-dd)
-    email           TEXT,                               -- String
-    target_position TEXT,                               -- String
-    target_city     TEXT,                               -- String
-    description     TEXT,                               -- String
-    avatar_url      TEXT,                               -- String
-    extend_fields   TEXT,                               -- String (JSON)
-    create_time     TEXT DEFAULT '2026-04-12 12:00:00',  -- String (格式: yyyy-MM-dd HH:mm:ss)
-    update_time     TEXT DEFAULT '2026-04-12 12:00:00'   -- String (格式: yyyy-MM-dd HH:mm:ss)
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER,
+    nickname        TEXT,
+    school          TEXT,
+    education       TEXT,
+    major           TEXT,
+    gender          TEXT,
+    graduation_date TEXT,
+    email           TEXT,
+    target_position TEXT,
+    target_city     TEXT,
+    description     TEXT,
+    avatar_url      TEXT,
+    extend_fields   TEXT,
+    gmt_create      TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    gmt_modified    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
 -- 用户 ID 唯一索引

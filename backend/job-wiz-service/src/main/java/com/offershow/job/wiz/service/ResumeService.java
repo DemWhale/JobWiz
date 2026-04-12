@@ -28,7 +28,7 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
         }
         LambdaQueryWrapper<Resume> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Resume::getUserId, userId)
-                .orderByDesc(Resume::getUpdatedAt);
+                .orderByDesc(Resume::getGmtModified);
         return list(wrapper);
     }
 
@@ -56,8 +56,8 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
             return null;
         }
         Date now = new Date();
-        resume.setCreatedAt(now);
-        resume.setUpdatedAt(now);
+        resume.setGmtCreate(now);
+        resume.setGmtModified(now);
         if (resume.getVisibility() == null) {
             resume.setVisibility("private");
         }
@@ -81,7 +81,7 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
         if (Objects.isNull(resume) || Objects.isNull(resume.getId())) {
             return false;
         }
-        resume.setUpdatedAt(new Date());
+        resume.setGmtModified(new Date());
         return updateById(resume);
     }
 

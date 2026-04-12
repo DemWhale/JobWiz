@@ -93,10 +93,10 @@ public class UserFeature implements Serializable {
     /**
      * 创建时间
      */
-    private Date createTime;
+    private Date gmtCreate;
 
     /**
-     * 更新时间
+     * 修改时间
      */
-    private Date updateTime;
+    private Date gmtModified;
 }

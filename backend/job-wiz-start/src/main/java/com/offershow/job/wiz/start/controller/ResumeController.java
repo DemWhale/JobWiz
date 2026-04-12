@@ -1,5 +1,6 @@
 package com.offershow.job.wiz.start.controller;
 
+import com.offershow.job.wiz.common.model.ApiResponse;
 import com.offershow.job.wiz.dal.entity.Resume;
 import com.offershow.job.wiz.service.ResumeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,58 +26,33 @@ public class ResumeController {
     @Autowired
     private ResumeService resumeService;
 
-    /**
-     * 根据用户 ID 获取简历列表
-     *
-     * @param userId 用户 ID
-     * @return 简历列表
-     */
     @GetMapping("/list")
-    public List<Resume> listByUserId(@RequestParam("userId") Long userId) {
-        return resumeService.listByUserId(userId);
+    public ApiResponse<List<Resume>> listByUserId(@RequestParam("userId") Long userId) {
+        List<Resume> list = resumeService.listByUserId(userId);
+        return ApiResponse.ok(list);
     }
 
-    /**
-     * 根据 ID 获取简历
-     *
-     * @param id 简历 ID
-     * @return 简历信息
-     */
     @GetMapping("/{id}")
-    public Resume getById(@PathVariable("id") Long id) {
-        return resumeService.getById(id);
+    public ApiResponse<Resume> getById(@PathVariable("id") Long id) {
+        Resume resume = resumeService.getById(id);
+        return resume != null ? ApiResponse.ok(resume) : ApiResponse.fail("简历不存在");
     }
 
-    /**
-     * 创建简历
-     *
-     * @param resume 简历信息
-     * @return 创建后的简历
-     */
     @PostMapping("/create")
-    public Resume create(@RequestBody Resume resume) {
-        return resumeService.createResume(resume);
+    public ApiResponse<Resume> create(@RequestBody Resume resume) {
+        Resume result = resumeService.createResume(resume);
+        return result != null ? ApiResponse.ok(result) : ApiResponse.fail("创建失败");
     }
 
-    /**
-     * 更新简历
-     *
-     * @param resume 简历信息
-     * @return 是否成功
-     */
     @PutMapping("/update")
-    public boolean update(@RequestBody Resume resume) {
-        return resumeService.updateResume(resume);
+    public ApiResponse<Boolean> update(@RequestBody Resume resume) {
+        boolean ok = resumeService.updateResume(resume);
+        return ok ? ApiResponse.ok(ok) : ApiResponse.fail("更新失败");
     }
 
-    /**
-     * 删除简历
-     *
-     * @param id 简历 ID
-     * @return 是否成功
-     */
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable("id") Long id) {
-        return resumeService.deleteResume(id);
+    public ApiResponse<Boolean> delete(@PathVariable("id") Long id) {
+        boolean ok = resumeService.deleteResume(id);
+        return ok ? ApiResponse.ok(ok) : ApiResponse.fail("删除失败");
     }
 }

@@ -47,12 +47,12 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         UserFeature existing = getByUserId(userFeature.getUserId());
         if (Objects.nonNull(existing)) {
             userFeature.setId(existing.getId());
-            userFeature.setUpdateTime(new Date());
+            userFeature.setGmtModified(new Date());
             return updateById(userFeature);
         } else {
             // 否则新增
-            userFeature.setCreateTime(new Date());
-            userFeature.setUpdateTime(new Date());
+            userFeature.setGmtCreate(new Date());
+            userFeature.setGmtModified(new Date());
             return save(userFeature);
         }
     }
@@ -67,8 +67,8 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         if (Objects.isNull(userFeature)) {
             return false;
         }
-        userFeature.setCreateTime(new Date());
-        userFeature.setUpdateTime(new Date());
+        userFeature.setGmtCreate(new Date());
+        userFeature.setGmtModified(new Date());
         return save(userFeature);
     }
 
@@ -82,7 +82,7 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         if (Objects.isNull(userFeature) || Objects.isNull(userFeature.getId())) {
             return false;
         }
-        userFeature.setUpdateTime(new Date());
+        userFeature.setGmtModified(new Date());
         return updateById(userFeature);
     }
 

@@ -1,7 +1,7 @@
 -- 简历信息表
 CREATE TABLE IF NOT EXISTS `resume`
 (
-    `id`              BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
+    `id`              bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
     `slug`            VARCHAR(50)  DEFAULT NULL COMMENT '短链接标识',
     `title`           VARCHAR(200) DEFAULT NULL COMMENT '简历标题',
     `user_id`         BIGINT(20)   DEFAULT NULL COMMENT '用户 ID',
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS `resume`
     `source_resume_id` BIGINT(20)  DEFAULT NULL COMMENT '来源简历 ID',
     `language`        VARCHAR(20)  DEFAULT 'CHINESE' COMMENT '语言：CHINESE/ENGLISH',
     `template_id`    BIGINT(20)   DEFAULT NULL COMMENT '关联模板 ID',
-    `created_at`      DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at`      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `gmt_create`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `gmt_modified`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     INDEX `idx_user_id` (`user_id`) COMMENT '用户 ID 索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='简历信息表';
