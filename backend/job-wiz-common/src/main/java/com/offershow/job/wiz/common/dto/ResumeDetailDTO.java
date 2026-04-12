@@ -1,4 +1,4 @@
-package com.offershow.job.wiz.common;
+package com.offershow.job.wiz.common.dto;
 
 import lombok.Data;
 

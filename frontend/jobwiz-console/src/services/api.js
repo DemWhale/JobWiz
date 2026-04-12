@@ -48,7 +48,7 @@ export const userFeatureApi = {
   getUserFeature: async (userId) => {
     try {
       const response = await api.get('/user-feature/user', { params: { userId } });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('获取用户信息失败:', error);
       throw error;
@@ -63,7 +63,7 @@ export const userFeatureApi = {
   saveOrUpdate: async (data) => {
     try {
       const response = await api.post('/user-feature/save-or-update', data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('保存用户信息失败:', error);
       throw error;
@@ -78,7 +78,7 @@ export const userFeatureApi = {
   list: async (params = {}) => {
     try {
       const response = await api.get('/user-feature/list', { params });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('查询用户列表失败:', error);
       throw error;
@@ -96,7 +96,7 @@ export const resumeApi = {
   listByUserId: async (userId) => {
     try {
       const response = await api.get('/resume/list', { params: { userId } });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('获取简历列表失败:', error);
       throw error;
@@ -111,7 +111,7 @@ export const resumeApi = {
   getById: async (id) => {
     try {
       const response = await api.get(`/resume/${id}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('获取简历失败:', error);
       throw error;
@@ -126,7 +126,7 @@ export const resumeApi = {
   create: async (data) => {
     try {
       const response = await api.post('/resume/create', data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('创建简历失败:', error);
       throw error;
@@ -141,7 +141,7 @@ export const resumeApi = {
   update: async (data) => {
     try {
       const response = await api.put('/resume/update', data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('更新简历失败:', error);
       throw error;
@@ -156,7 +156,7 @@ export const resumeApi = {
   delete: async (id) => {
     try {
       const response = await api.delete(`/resume/${id}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error('删除简历失败:', error);
       throw error;
@@ -173,6 +173,7 @@ export const resumeTemplateApi = {
   list: async () => {
     try {
       const response = await api.get('/resume-template/list');
+      // ResumeTemplateController 直接返回 List，没有 ApiResponse 包装
       return response.data;
     } catch (error) {
       console.error('获取模板列表失败:', error);
@@ -188,6 +189,7 @@ export const resumeTemplateApi = {
   getById: async (id) => {
     try {
       const response = await api.get(`/resume-template/${id}`);
+      // ResumeTemplateController 直接返回对象，没有 ApiResponse 包装
       return response.data;
     } catch (error) {
       console.error('获取模板失败:', error);

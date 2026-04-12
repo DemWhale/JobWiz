@@ -42,6 +42,7 @@ public class Resume implements Serializable {
 
     /**
      * 完整简历结构数据（JSON 格式）
+     * @see com.offershow.job.wiz.common.dto.ResumeDetailDTO
      */
     private String resumeDetail;
 

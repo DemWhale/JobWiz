@@ -11,6 +11,7 @@ public class ApiResponse<T> {
     private int code;
     private String message;
     private T data;
+    private boolean success;
 
     public ApiResponse() {}
 
@@ -18,12 +19,14 @@ public class ApiResponse<T> {
         this.code = bizCode.getCode();
         this.message = bizCode.getMessage();
         this.data = data;
+        this.success = bizCode == BizCodeEnum.SUCCESS;
     }
 
     public ApiResponse(int code, String message, T data) {
         this.code = code;
         this.message = message;
         this.data = data;
+        this.success = code == 200;
     }
 
     public static <T> ApiResponse<T> ok(T data) {
@@ -31,7 +34,9 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> ok(String message, T data) {
-        return new ApiResponse<>(BizCodeEnum.SUCCESS.getCode(), message, data);
+        ApiResponse<T> response = new ApiResponse<>(BizCodeEnum.SUCCESS.getCode(), message, data);
+        response.setSuccess(true);
+        return response;
     }
 
     public static <T> ApiResponse<T> fail(BizCodeEnum bizCode) {
@@ -68,5 +73,13 @@ public class ApiResponse<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 }
