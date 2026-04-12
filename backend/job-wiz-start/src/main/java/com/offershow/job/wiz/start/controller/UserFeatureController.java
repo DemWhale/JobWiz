@@ -1,6 +1,6 @@
 package com.offershow.job.wiz.start.controller;
 
-import com.offershow.job.wiz.common.enums.CodeEnum;
+import com.offershow.job.wiz.common.enums.BizCodeEnum;
 import com.offershow.job.wiz.common.model.ApiResponse;
 import com.offershow.job.wiz.dal.entity.UserFeature;
 import com.offershow.job.wiz.service.UserFeatureService;
@@ -29,7 +29,7 @@ public class UserFeatureController {
     @GetMapping("/user")
     public ApiResponse<UserFeature> getByUserId(@RequestParam("userId") Long userId) {
         UserFeature feature = userFeatureService.getByUserId(userId);
-        return feature != null ? ApiResponse.ok(feature) : ApiResponse.fail(CodeEnum.PARAM_ERROR.getCode(), "用户信息不存在");
+        return feature != null ? ApiResponse.ok(feature) : ApiResponse.fail(BizCodeEnum.PARAM_ERROR.getCode(), "用户信息不存在");
     }
 
     @PostMapping("/save-or-update")

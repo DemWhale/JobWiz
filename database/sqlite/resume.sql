@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS resume
 (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    gmt_create      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    gmt_modified    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     slug            TEXT,
     title           TEXT,
     user_id         INTEGER,
@@ -11,9 +13,7 @@ CREATE TABLE IF NOT EXISTS resume
     source          TEXT,
     source_resume_id INTEGER,
     language        TEXT,
-    template_id     INTEGER,
-    gmt_create      TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-    gmt_modified    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    template_id     INTEGER
 );
 
 -- 用户 ID 索引

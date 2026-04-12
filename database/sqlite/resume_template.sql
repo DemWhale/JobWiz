@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS resume_template
 (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    gmt_create  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    gmt_modified TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     name        TEXT NOT NULL,
     title       TEXT NOT NULL,
     preview     TEXT,
@@ -9,7 +11,5 @@ CREATE TABLE IF NOT EXISTS resume_template
     meta        TEXT,
     columns     INTEGER DEFAULT 1,
     is_vip      INTEGER DEFAULT 0,
-    description TEXT DEFAULT '',
-    gmt_create  TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-    gmt_modified TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    description TEXT DEFAULT ''
 );

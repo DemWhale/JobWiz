@@ -1,8 +1,9 @@
 -- 用户特征信息表（SQLite 版本）
--- 字段类型与 UserFeature 实体一一对应
 CREATE TABLE IF NOT EXISTS user_feature
 (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    gmt_create      TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    gmt_modified    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_id         INTEGER,
     nickname        TEXT,
     school          TEXT,
@@ -15,9 +16,7 @@ CREATE TABLE IF NOT EXISTS user_feature
     target_city     TEXT,
     description     TEXT,
     avatar_url      TEXT,
-    extend_fields   TEXT,
-    gmt_create      TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-    gmt_modified    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    extend_fields   TEXT
 );
 
 -- 用户 ID 唯一索引

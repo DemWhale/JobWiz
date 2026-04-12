@@ -111,7 +111,7 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
             wrapper.eq(UserFeature::getEducation, education);
         }
         
-        wrapper.orderByDesc(UserFeature::getUpdateTime);
+        wrapper.orderByDesc(UserFeature::getGmtModified);
         return list(wrapper);
     }
 }
