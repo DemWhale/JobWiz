@@ -18,8 +18,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.offershow.job.wiz.dal.handler.DateToStringTypeHandler;
-import org.apache.ibatis.type.DateTypeHandler;
+import javax.sql.DataSource;
+
 
 /**
  * MyBatis Plus 完整配置类（SQLite）
@@ -101,8 +101,6 @@ public class JobWizSqliteConfig {
         configuration.setAggressiveLazyLoading(true);
         configuration.setCallSettersOnNulls(true);
         configuration.setLogImpl(org.apache.ibatis.logging.stdout.StdOutImpl.class);
-        // 注册 Date -> String 处理器，解决 SQLite 无法解析 JDBC 时间戳的问题
-        configuration.getTypeHandlerRegistry().register(java.util.Date.class, new DateToStringTypeHandler());
         return configuration;
     }
 

@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS user_feature
     description     TEXT,                               -- String
     avatar_url      TEXT,                               -- String
     extend_fields   TEXT,                               -- String (JSON)
-    create_time     TEXT DEFAULT (datetime('now', 'localtime')),  -- Date (Jackson 格式: yyyy-MM-dd HH:mm:ss)
-    update_time     TEXT DEFAULT (datetime('now', 'localtime'))    -- Date (Jackson 格式: yyyy-MM-dd HH:mm:ss)
+    create_time     TEXT DEFAULT '2026-04-12 12:00:00',  -- String (格式: yyyy-MM-dd HH:mm:ss)
+    update_time     TEXT DEFAULT '2026-04-12 12:00:00'   -- String (格式: yyyy-MM-dd HH:mm:ss)
 );
 
 -- 用户 ID 唯一索引
