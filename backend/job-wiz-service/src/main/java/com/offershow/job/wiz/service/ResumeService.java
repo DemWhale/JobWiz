@@ -55,9 +55,6 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
         if (Objects.isNull(resume)) {
             return null;
         }
-        Date now = new Date();
-        resume.setGmtCreate(now);
-        resume.setGmtModified(now);
         if (resume.getVisibility() == null) {
             resume.setVisibility("private");
         }

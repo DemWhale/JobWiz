@@ -51,8 +51,6 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
             return updateById(userFeature);
         } else {
             // 否则新增
-            userFeature.setGmtCreate(new Date());
-            userFeature.setGmtModified(new Date());
             return save(userFeature);
         }
     }
