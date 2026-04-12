@@ -1,0 +1,422 @@
+{
+  "id": "cmnvzm6by3fxwp32h9ccc6v6v",
+  "title": "基于《校招通用模板》模板创建的简历",
+  "slug": "xaajib",
+  "data": {
+    "basics": {
+      "name": "得敏",
+      "headline": "JAVA",
+      "email": "xiaou.up@example.com",
+      "phone": "+86 138-XXXX-XXXX",
+      "location": "北京",
+      "url": {
+        "label": "",
+        "href": ""
+      },
+      "customFields": [
+        {
+          "id": "kksut22wxxdml8ju32vvmpps",
+          "icon": "gender-intersex",
+          "name": "性别",
+          "value": "男"
+        },
+        {
+          "id": "uzauz8tnf2h8da8g4ie5pahi",
+          "icon": "house",
+          "name": "籍贯",
+          "value": "河北"
+        },
+        {
+          "id": "rvbsqcasxw6b3z9jbsot4sv6",
+          "icon": "github-logo",
+          "name": "GitHub",
+          "value": ""
+        },
+        {
+          "id": "b2sf7ihrlh8a7chhkqxy16vw",
+          "icon": "briefcase",
+          "name": "当前状态",
+          "value": "待业"
+        },
+        {
+          "id": "oi55ym83xo2i6w01ipvncofr",
+          "icon": "link",
+          "name": "主页链接",
+          "value": "991230"
+        },
+        {
+          "id": "mtsgbxqzijmg1hvbnzfcy2nd",
+          "icon": "",
+          "name": "个性",
+          "value": "外向"
+        }
+      ],
+      "picture": {
+        "url": "https://oss.upcv.tech/resume/avatar/cmnvp8o1e02eio52cv9dfa72e/dqijupk2g4fj5behim87t0jn.jpg?t=1776013282287",
+        "size": 64,
+        "aspectRatio": 1,
+        "borderRadius": 0,
+        "effects": {
+          "hidden": false,
+          "border": false,
+          "grayscale": false
+        }
+      }
+    },
+    "sections": {
+      "summary": {
+        "name": "个人总结",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "summary",
+        "content": "<p class=\"my-2\">作为一名充满热情和求知欲的应届毕业生，我具备扎实的计算机科学基础和出色的学习能力。在校期间，我积极参与多个项目，熟练掌握了Java、Python等编程语言，并积累了丰富的项目开发和团队协作经验。我渴望将所学知识应用于实际工作，通过持续学习和不懈努力，为企业创造价值，实现个人职业成长。</p><ol><li><p class=\"my-2\"><strong>你可知道我是谁？</strong></p></li></ol>"
+      },
+      "awards": {
+        "name": "荣誉奖项",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "awards",
+        "items": [
+          {
+            "id": "l9fkwvnzb30mn02crqiijbbn",
+            "visible": true,
+            "title": "校级三好学生",
+            "awarder": "北京大学",
+            "date": "2023-09",
+            "summary": "因学业成绩优异和综合表现突出获得此荣誉",
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          },
+          {
+            "id": "ayv8aheoqueuxf5dp18bnvdu",
+            "visible": true,
+            "title": "ACM程序设计竞赛二等奖",
+            "awarder": "北京大学",
+            "date": "2023-05",
+            "summary": "在校级ACM程序设计竞赛中表现出色，获得二等奖",
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          }
+        ]
+      },
+      "certifications": {
+        "name": "证书",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "certifications",
+        "items": [
+          {
+            "id": "xykbt8zomfgrihvz4wjuta6t",
+            "visible": true,
+            "name": "大学英语四级证书",
+            "issuer": "教育部考试中心",
+            "date": "2023-03",
+            "summary": "总分<strong>550</strong>分",
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          },
+          {
+            "id": "qv94sqaqxrvp3skhe6jxmz4t",
+            "visible": true,
+            "name": "全国计算机等级考试二级C++",
+            "issuer": "教育部考试中心",
+            "date": "2022-12",
+            "summary": "考核编程语言基础及应用能力",
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          }
+        ]
+      },
+      "education": {
+        "name": "教育经历",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "education",
+        "items": [
+          {
+            "id": "ooltj3ah88foo3v4xn2itzok",
+            "visible": true,
+            "institution": "北京大学",
+            "studyType": "本科",
+            "area": "计算机科学与技术",
+            "score": "",
+            "date": "2022-09 - 2026-06",
+            "summary": "<ul><li>主修课程包括<strong>数据结构与算法</strong>、<strong>操作系统</strong>、<strong>计算机网络</strong>、<strong>数据库系统</strong>、<strong>软件工程</strong>、<strong>人工智能导论</strong>等，平均学分绩点（GPA）达到<strong>3.8/4.0</strong>。</li><li>积极参与学院组织的<strong>科研项目</strong>和<strong>技术讲座</strong>，拓宽专业视野，提升解决复杂问题的能力。</li><li>荣获<strong>校级三好学生</strong>荣誉称号，并在<strong>ACM程序设计竞赛</strong>中获得<strong>二等奖</strong>。</li></ul>",
+            "picture": {
+              "url": "https://oss.upcv.tech/public/school-logo/4111010001.png"
+            },
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          }
+        ]
+      },
+      "experience": {
+        "name": "工作经历",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "experience",
+        "items": []
+      },
+      "volunteer": {
+        "name": "社团和组织经历",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "volunteer",
+        "items": [
+          {
+            "id": "cda4a40dnffelrhrn2llwhts",
+            "visible": true,
+            "organization": "北京大学学生会",
+            "position": "技术部部长",
+            "location": "",
+            "date": "2023-09 - 2024-09",
+            "summary": "<ul><li>负责学生会<strong>官方网站的日常维护与功能迭代</strong>，主导完成了网站<strong>前端界面优化</strong>，提升用户体验<strong>[XX]%</strong>。</li><li>组织并指导部门成员进行<strong>编程技能培训</strong>，如Python入门、Web开发基础等，成功培训<strong>20余名</strong>学生。</li><li>策划并实施了<strong>3场</strong>大型校园技术分享活动，邀请行业专家进行讲座，参与人数累计超过<strong>500人次</strong>，极大地促进了校园技术交流氛围。</li><li>协调跨部门技术需求，为学生会各类活动提供技术支持，确保活动的顺利进行。</li></ul>",
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          }
+        ]
+      },
+      "interests": {
+        "name": "兴趣爱好",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "interests",
+        "items": []
+      },
+      "languages": {
+        "name": "语言",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "languages",
+        "items": []
+      },
+      "profiles": {
+        "name": "社交主页",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "profiles",
+        "items": []
+      },
+      "projects": {
+        "name": "项目经历",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "projects",
+        "items": [
+          {
+            "id": "ydud6wpa23jgbigabsynwduv",
+            "visible": true,
+            "name": "基于深度学习的智能推荐系统",
+            "description": "",
+            "date": "2024-03 - 2024-08",
+            "summary": "<ul><li>负责<strong>系统架构设计</strong>和<strong>核心算法实现</strong>，基于Python与TensorFlow构建深度学习模型，实现用户行为预测与商品推荐。</li><li>收集并处理了<strong>超过10万条</strong>用户行为数据，通过<strong>特征工程</strong>将数据维度提升<strong>20%</strong>，有效提升模型训练效率。</li><li>优化推荐算法，使系统<strong>推荐准确率提升了15%</strong>，用户点击率提高了<strong>8%</strong>，并在期末项目评比中获得<strong>A+</strong>。</li><li>撰写项目报告，详细阐述了模型原理、实验过程与结果分析，展示了扎实的理论基础和实践能力。</li></ul>",
+            "keywords": [],
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          },
+          {
+            "id": "lklmfnn2g5amyoahd6vpugfj",
+            "visible": true,
+            "name": "校园二手交易平台开发",
+            "description": "",
+            "date": "2023-09 - 2024-01",
+            "summary": "<ul><li>独立设计并开发了基于<strong>Spring Boot</strong>后端框架和<strong>Vue.js</strong>前端框架的校园二手交易平台。</li><li>实现了用户注册登录、商品发布、浏览搜索、在线聊天、订单管理等核心功能模块。</li><li>采用<strong>MySQL</strong>数据库进行数据存储，并设计了高效的数据库表结构，确保数据访问速度和系统稳定性。</li><li>通过压力测试，系统支持<strong>500+并发用户</strong>，并在校内小范围测试中获得师生一致好评，用户反馈积极，日均活跃用户达<strong>[XX]</strong>人。</li></ul>",
+            "keywords": [],
+            "url": {
+              "label": "",
+              "href": ""
+            }
+          }
+        ]
+      },
+      "publications": {
+        "name": "出版物",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "publications",
+        "items": []
+      },
+      "references": {
+        "name": "推荐信",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "references",
+        "items": []
+      },
+      "skills": {
+        "name": "技能",
+        "columns": 1,
+        "separateLinks": true,
+        "visible": true,
+        "id": "skills",
+        "items": [
+          {
+            "id": "pccwgh44rg66g7b4i7slbf63",
+            "visible": true,
+            "name": "编程语言",
+            "description": "精通",
+            "level": 3,
+            "keywords": [
+              "Java",
+              "Python",
+              "C++",
+              "JavaScript"
+            ]
+          },
+          {
+            "id": "mdjy1dral7if4ipe7aij0bog",
+            "visible": true,
+            "name": "前端技术",
+            "description": "",
+            "level": 3,
+            "keywords": [
+              "Vue.js",
+              "HTML5",
+              "CSS3",
+              "Element UI"
+            ]
+          },
+          {
+            "id": "lgvumqwz7rncoe4coid5uj2a",
+            "visible": true,
+            "name": "后端技术",
+            "description": "",
+            "level": 3,
+            "keywords": [
+              "Spring Boot",
+              "MyBatis",
+              "RESTful API",
+              "Tomcat"
+            ]
+          },
+          {
+            "id": "ecy6mutqhnfww9me3iozl41i",
+            "visible": true,
+            "name": "数据库",
+            "description": "",
+            "level": 3,
+            "keywords": [
+              "MySQL",
+              "Redis",
+              "MongoDB"
+            ]
+          },
+          {
+            "id": "fmhnvohdwnabyhbkdf0kg8tx",
+            "visible": true,
+            "name": "开发工具与平台",
+            "description": "",
+            "level": 3,
+            "keywords": [
+              "Git",
+              "Maven",
+              "IntelliJ IDEA",
+              "VS Code",
+              "Linux"
+            ]
+          },
+          {
+            "id": "c6y24djn4p4wfvxxd9n67eoo",
+            "visible": true,
+            "name": "机器学习",
+            "description": "",
+            "level": 3,
+            "keywords": [
+              "TensorFlow",
+              "Scikit-learn",
+              "数据分析",
+              "模型优化"
+            ]
+          }
+        ]
+      },
+      "custom": {}
+    },
+    "metadata": {
+      "template": "elite",
+      "layout": [
+        [
+          [
+            "profiles",
+            "summary",
+            "education",
+            "experience",
+            "projects",
+            "volunteer",
+            "references"
+          ],
+          [
+            "languages",
+            "skills",
+            "interests",
+            "certifications",
+            "awards",
+            "publications"
+          ]
+        ]
+      ],
+      "css": {
+        "value": ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+        "visible": false
+      },
+      "page": {
+        "margin": 28,
+        "format": "a4",
+        "options": {
+          "breakLine": true,
+          "pageNumbers": true
+        }
+      },
+      "theme": {
+        "background": "#fffefe",
+        "text": "#242424",
+        "primary": "#2563eb"
+      },
+      "typography": {
+        "font": {
+          "family": "Noto Sans SC",
+          "subset": "chinese-simplified",
+          "variants": [
+            "regular"
+          ],
+          "size": 13
+        },
+        "lineHeight": 1.3,
+        "hideIcons": false,
+        "underlineLinks": false
+      },
+      "notes": ""
+    }
+  },
+  "visibility": "private",
+  "locked": false,
+  "userId": "cmnvp8o1e02eio52cv9dfa72e",
+  "createdAt": "2026-04-12T16:37:56.494Z",
+  "updatedAt": "2026-04-12T17:05:08.096Z"
+}

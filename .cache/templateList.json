@@ -1,0 +1,213 @@
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 1,
+      "title": "经典",
+      "name": "rhyhorn",
+      "preview": "https://oss.upcv.tech/web/template/rhyhorn.jpg",
+      "permission": [
+        "free"
+      ],
+      "meta": {
+        "css": {
+          "value": ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+          "visible": false
+        },
+        "page": {
+          "format": "a4",
+          "margin": 28,
+          "options": {
+            "breakLine": true,
+            "pageNumbers": true
+          }
+        },
+        "notes": "",
+        "theme": {
+          "text": "#242424",
+          "primary": "#2563eb",
+          "background": "#fffefe"
+        },
+        "layout": [
+          [
+            [
+              "education",
+              "profiles",
+              "experience",
+              "projects",
+              "summary",
+              "volunteer",
+              "references"
+            ],
+            [
+              "languages",
+              "skills",
+              "interests",
+              "certifications",
+              "awards",
+              "publications"
+            ]
+          ]
+        ],
+        "template": "rhyhorn",
+        "typography": {
+          "font": {
+            "size": 13,
+            "family": "Noto Sans SC",
+            "subset": "chinese-simplified",
+            "variants": [
+              "regular"
+            ]
+          },
+          "hideIcons": false,
+          "lineHeight": 1.3,
+          "underlineLinks": false
+        }
+      },
+      "columns": 1,
+      "isVip": false,
+      "description": ""
+    },
+    {
+      "id": 40,
+      "title": "雅蓝",
+      "name": "elite",
+      "preview": "https://oss.upcv.tech/web/template/elite.jpg",
+      "permission": [
+        "weekly",
+        "monthly",
+        "yearly",
+        "lifetime"
+      ],
+      "meta": {
+        "css": {
+          "value": ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+          "visible": false
+        },
+        "page": {
+          "format": "a4",
+          "margin": 28,
+          "options": {
+            "breakLine": true,
+            "pageNumbers": true
+          }
+        },
+        "notes": "",
+        "theme": {
+          "text": "#242424",
+          "primary": "#2563eb",
+          "background": "#fffefe"
+        },
+        "layout": [
+          [
+            [
+              "education",
+              "profiles",
+              "experience",
+              "projects",
+              "summary",
+              "volunteer",
+              "references"
+            ],
+            [
+              "languages",
+              "skills",
+              "interests",
+              "certifications",
+              "awards",
+              "publications"
+            ]
+          ]
+        ],
+        "template": "elite",
+        "typography": {
+          "font": {
+            "size": 13,
+            "family": "Noto Sans SC",
+            "subset": "chinese-simplified",
+            "variants": [
+              "regular"
+            ]
+          },
+          "hideIcons": false,
+          "lineHeight": 1.3,
+          "underlineLinks": false
+        }
+      },
+      "columns": 2,
+      "isVip": true,
+      "description": "双栏布局，样式简洁，适合大部分岗位"
+    },
+    {
+      "id": 140,
+      "title": "现代优雅",
+      "name": "modernelegant",
+      "preview": "https://oss.upcv.tech/web/template/modernelegant.png",
+      "permission": [
+        "lifetime",
+        "yearly",
+        "monthly",
+        "weekly"
+      ],
+      "meta": {
+        "css": {
+          "value": ".section {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}",
+          "visible": false
+        },
+        "page": {
+          "format": "a4",
+          "margin": 34,
+          "options": {
+            "breakLine": false,
+            "pageNumbers": false
+          }
+        },
+        "notes": "",
+        "theme": {
+          "text": "#242424",
+          "primary": "#2563eb",
+          "background": "#fffefe"
+        },
+        "layout": [
+          [
+            [
+              "education",
+              "profiles",
+              "experience",
+              "projects",
+              "summary",
+              "volunteer",
+              "references"
+            ],
+            [
+              "languages",
+              "skills",
+              "interests",
+              "certifications",
+              "awards",
+              "publications"
+            ]
+          ]
+        ],
+        "template": "modernelegant",
+        "typography": {
+          "font": {
+            "size": 14,
+            "family": "Noto Sans SC",
+            "subset": "chinese-simplified",
+            "variants": [
+              "regular"
+            ]
+          },
+          "hideIcons": false,
+          "lineHeight": 1.5,
+          "underlineLinks": true
+        }
+      },
+      "columns": 1,
+      "isVip": true,
+      "description": ""
+    }
+  ],
+  "message": "Resume templates retrieved successfully"
+}

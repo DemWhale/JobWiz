@@ -27,7 +27,6 @@ replay_pid*
 .qoder
 
 target/
-.cache
 
 # Database files
 *.db
