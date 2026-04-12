@@ -1,44 +1,6 @@
 .input-area {
-  padding: 20px 30px;
-  background: white;
-  border-top: 1px solid #eaeaea;
-}
-
-.function-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.func-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: #f5f5f5;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.func-btn:hover {
-  background: #eaeaea;
-}
-
-.func-btn.highlight {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  color: white;
-}
-
-.func-btn.highlight:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-}
-
-.btn-icon {
-  font-size: 16px;
+  padding: 12px 0;
+  background: transparent;
 }
 
 .input-wrapper {

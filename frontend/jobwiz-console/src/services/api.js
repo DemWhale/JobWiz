@@ -164,4 +164,36 @@ export const resumeApi = {
   }
 };
 
+// 简历模板 API 服务
+export const resumeTemplateApi = {
+  /**
+   * 获取所有模板列表
+   * @returns {Promise<Array>} 模板列表
+   */
+  list: async () => {
+    try {
+      const response = await api.get('/resume-template/list');
+      return response.data;
+    } catch (error) {
+      console.error('获取模板列表失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 根据 ID 获取模板
+   * @param {number|string} id - 模板 ID
+   * @returns {Promise<Object>} 模板信息
+   */
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/resume-template/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('获取模板失败:', error);
+      throw error;
+    }
+  }
+};
+
 export default api;

@@ -20,25 +20,6 @@ const InputArea = ({ onSend }) => {
 
   return (
     <div className="input-area">
-      <div className="function-buttons">
-        <button className="func-btn">
-          <span className="btn-icon">🧠</span>
-          <span>深度思考</span>
-        </button>
-        <button className="func-btn">
-          <span className="btn-icon">📄</span>
-          <span>新建</span>
-        </button>
-        <button className="func-btn highlight">
-          <span className="btn-icon">⚡</span>
-          <span>59 积分</span>
-        </button>
-        <button className="func-btn">
-          <span className="btn-icon">🕐</span>
-          <span>历史</span>
-        </button>
-      </div>
-      
       <div className="input-wrapper">
         <textarea
           value={inputValue}

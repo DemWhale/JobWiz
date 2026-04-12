@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { userFeatureApi } from '../services/api';
 import './Profile.css';
 
 const Profile = ({ userId, userFeature, onUpdateUser }) => {
@@ -20,7 +21,7 @@ const Profile = ({ userId, userFeature, onUpdateUser }) => {
     avatarUrl: ''
   });
 
-  // 初始化表单数据
+  // 初始化表单数据：优先使用 userFeature prop
   useEffect(() => {
     if (userFeature) {
       setFormData({
@@ -38,10 +39,28 @@ const Profile = ({ userId, userFeature, onUpdateUser }) => {
         avatarUrl: userFeature.avatarUrl || ''
       });
     } else if (userId) {
-      setFormData(prev => ({
-        ...prev,
-        userId: userId
-      }));
+      // 兜底：如果 userFeature 未加载，尝试从接口获取
+      userFeatureApi.getUserFeature(userId).then(feature => {
+        if (feature) {
+          setFormData({
+            userId: feature.userId || userId,
+            nickname: feature.nickname || '',
+            school: feature.school || '',
+            education: feature.education || '',
+            major: feature.major || '',
+            gender: feature.gender || '男',
+            graduationDate: feature.graduationDate || '',
+            email: feature.email || '',
+            targetPosition: feature.targetPosition || '',
+            targetCity: feature.targetCity || '',
+            description: feature.description || '',
+            avatarUrl: feature.avatarUrl || ''
+          });
+        }
+      }).catch(() => {
+        // 接口失败也不阻塞页面使用
+        setFormData(prev => ({ ...prev, userId }));
+      });
     }
   }, [userFeature, userId]);
 
@@ -84,7 +103,7 @@ const Profile = ({ userId, userFeature, onUpdateUser }) => {
 
       <div className="profile-card">
         <div className="profile-tip">
-          <p>嘿，我是鼠鼠，分享一些你的信息，让我帮你找到心仪工作！</p>
+          <p>分享一些你的信息，让我帮你找到心仪工作！</p>
         </div>
 
         <form onSubmit={handleSubmit} className="profile-form">

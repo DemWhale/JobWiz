@@ -7,7 +7,6 @@ import com.offershow.job.wiz.dal.mapper.UserFeatureMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;

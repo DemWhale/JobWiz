@@ -1,0 +1,80 @@
+.resume-edit-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+}
+
+.resume-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.resume-edit-header .back-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.resume-edit-header .back-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.resume-edit-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.resume-edit-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.resume-edit-left {
+  width: 400px;
+  min-width: 400px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  background: white;
+}
+
+.resume-edit-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  gap: 8px;
+}
+
+.placeholder-hint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.resume-edit-right {
+  flex: 1;
+  overflow-y: auto;
+  background: #e5e7eb;
+}
+
+.resume-edit-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+}

@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import ResumeList from './pages/ResumeList';
+import ResumeEdit from './pages/ResumeEdit';
 import Home from './pages/Home';
 import Sidebar from './components/Sidebar';
 import { userFeatureApi } from './services/api';
@@ -69,9 +70,11 @@ function App() {
     const checkLoginStatus = async () => {
       try {
         const savedUserId = localStorage.getItem('userId');
+
         if (savedUserId) {
           setUserId(savedUserId);
           setIsLoggedIn(true);
+
           // 获取用户信息（失败也不影响登录状态）
           try {
             const feature = await userFeatureApi.getUserFeature(savedUserId);
@@ -79,9 +82,10 @@ function App() {
               setUserFeature(feature);
             }
           } catch (err) {
-            console.log('获取用户信息失败，但不影响登录', err);
+            console.log('获取用户信息失败，后端未启动或用户不存在', err);
           }
         }
+        // 没有 savedUserId 时，不自动 Mock 登录，由路由守卫跳转 /login
       } catch (error) {
         console.error('检查登录状态失败:', error);
       } finally {
@@ -160,7 +164,7 @@ function App() {
         path="/resume/edit/:id" 
         element={
           <ProtectedRoute>
-            <div className="placeholder-page">简历编辑（Spec E）</div>
+            <ResumeEdit userId={userId} />
           </ProtectedRoute>
         } 
       />

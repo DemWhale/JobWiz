@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -59,7 +58,7 @@ public class UserFeature implements Serializable {
     /**
      * 毕业时间
      */
-    private LocalDate graduationDate;
+    private Date graduationDate;
 
     /**
      * 邮箱

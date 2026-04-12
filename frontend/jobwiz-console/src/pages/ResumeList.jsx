@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resumeApi } from '../services/api';
+import TemplateSelector from '../components/TemplateSelector';
 import './ResumeList.css';
 
 const ResumeList = ({ userId }) => {
@@ -8,6 +9,7 @@ const ResumeList = ({ userId }) => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredResumeId, setHoveredResumeId] = useState(null);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   // 加载简历列表
   useEffect(() => {
@@ -80,7 +82,12 @@ const ResumeList = ({ userId }) => {
   };
 
   const handleCreate = () => {
-    navigate('/resume/new');
+    setShowTemplateSelector(true);
+  };
+
+  const handleTemplateSelect = (resumeId) => {
+    setShowTemplateSelector(false);
+    navigate(`/resume/edit/${resumeId}`);
   };
 
   const handleAICreate = () => {
@@ -177,6 +184,14 @@ const ResumeList = ({ userId }) => {
       <button className="fab-button" onClick={handleCreate}>
         +
       </button>
+
+      {/* 模板选择弹窗 */}
+      <TemplateSelector
+        open={showTemplateSelector}
+        onClose={() => setShowTemplateSelector(false)}
+        userId={userId}
+        onSelect={handleTemplateSelect}
+      />
     </div>
   );
 };

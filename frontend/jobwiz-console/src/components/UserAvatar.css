@@ -22,17 +22,58 @@
   object-fit: cover;
 }
 
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-avatar-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.menu-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu-avatar-fallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sidebar-avatar-menu {
   position: absolute;
-  bottom: 48px;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  width: 180px;
-  background: var(--bg-primary);
+  margin-bottom: 8px;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  padding: 8px 0;
-  z-index: 200;
+  padding: 6px 0;
+  z-index: 9999;
   animation: menuSlideUp 0.2s ease-out;
 }
 
@@ -64,7 +105,7 @@
 .menu-username {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-inverse);
 }
 
 .avatar-menu-divider {
