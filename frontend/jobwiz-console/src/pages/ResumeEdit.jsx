@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { resumeApi, resumeTemplateApi } from '../services/api';
 import ResumePreview from '../components/resume/ResumePreview';
+import ResumeForm from '../components/resume/ResumeForm';
 import './ResumeEdit.css';
 
 const ResumeEdit = ({ userId }) => {
@@ -11,11 +12,22 @@ const ResumeEdit = ({ userId }) => {
   const [templateMeta, setTemplateMeta] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+  const saveTimerRef = useRef(null);
 
   useEffect(() => {
     if (!id) return;
     fetchResume();
   }, [id]);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
 
   const fetchResume = async () => {
     try {
@@ -51,6 +63,36 @@ const ResumeEdit = ({ userId }) => {
     }
   };
 
+  // 防抖保存
+  const debouncedSave = useCallback((data) => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    setSaveStatus('saving');
+
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await resumeApi.update({
+          id: Number(id),
+          resumeDetail: JSON.stringify(data),
+        });
+        setSaveStatus('saved');
+        // 2秒后清除保存状态
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (error) {
+        console.error('保存简历失败:', error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    }, 500);
+  }, [id]);
+
+  const handleFormChange = useCallback((newData) => {
+    setResumeData(newData);
+    debouncedSave(newData);
+  }, [debouncedSave]);
+
   const handleSectionClick = (sectionId) => {
     // TODO: Spec E — 反向锚定到左侧表单
     console.log('Section clicked:', sectionId);
@@ -73,14 +115,21 @@ const ResumeEdit = ({ userId }) => {
         <h1 className="resume-edit-title">
           {resume?.title || '未命名简历'}
         </h1>
+        <div className="save-status">
+          {saveStatus === 'saving' && <span className="status-saving">保存中...</span>}
+          {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
+          {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
+        </div>
       </div>
       <div className="resume-edit-body">
-        {/* 左侧：编辑区（Spec E 实现） */}
+        {/* 左侧：编辑表单 */}
         <div className="resume-edit-left">
-          <div className="resume-edit-placeholder">
-            <p>简历编辑区（Spec E 实现）</p>
-            <p className="placeholder-hint">当前为只读预览模式，编辑功能将在后续版本中提供</p>
-          </div>
+          {resumeData && (
+            <ResumeForm
+              resumeData={resumeData}
+              onChange={handleFormChange}
+            />
+          )}
         </div>
         {/* 右侧：渲染预览 */}
         <div className="resume-edit-right">

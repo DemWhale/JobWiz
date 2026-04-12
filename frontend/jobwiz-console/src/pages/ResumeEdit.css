@@ -34,6 +34,24 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  flex: 1;
+}
+
+.save-status {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-saving {
+  color: #6b7280;
+}
+
+.status-saved {
+  color: #10b981;
+}
+
+.status-error {
+  color: #ef4444;
 }
 
 .resume-edit-body {
@@ -43,11 +61,11 @@
 }
 
 .resume-edit-left {
-  width: 400px;
-  min-width: 400px;
+  width: 480px;
+  min-width: 480px;
   border-right: 1px solid var(--border-color);
-  overflow-y: auto;
-  background: white;
+  overflow-y: hidden;
+  background: #f9fafb;
 }
 
 .resume-edit-placeholder {

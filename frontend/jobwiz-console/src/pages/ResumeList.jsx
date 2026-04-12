@@ -155,7 +155,7 @@ const ResumeList = ({ userId }) => {
                 <div className="resume-info">
                   <h3 className="resume-title">{getResumeTitle(resume)}</h3>
                   <p className="resume-time">
-                    最后更新于 {formatRelativeTime(resume.updatedAt)}
+                    最后更新于 {formatRelativeTime(resume.gmtModified)}
                   </p>
                 </div>
                 {hoveredResumeId === resume.id && (

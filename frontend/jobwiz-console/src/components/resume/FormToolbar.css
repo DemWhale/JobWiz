@@ -1,0 +1,33 @@
+.form-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.toolbar-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #374151;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.toolbar-btn:active {
+  background: #d1d5db;
+}
