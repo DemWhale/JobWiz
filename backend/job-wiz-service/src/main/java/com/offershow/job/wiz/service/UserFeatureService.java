@@ -7,7 +7,8 @@ import com.offershow.job.wiz.dal.mapper.UserFeatureMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,12 +48,12 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         UserFeature existing = getByUserId(userFeature.getUserId());
         if (Objects.nonNull(existing)) {
             userFeature.setId(existing.getId());
-            userFeature.setUpdateTime(LocalDateTime.now());
+            userFeature.setUpdateTime(new Date());
             return updateById(userFeature);
         } else {
             // 否则新增
-            userFeature.setCreateTime(LocalDateTime.now());
-            userFeature.setUpdateTime(LocalDateTime.now());
+            userFeature.setCreateTime(new Date());
+            userFeature.setUpdateTime(new Date());
             return save(userFeature);
         }
     }
@@ -67,8 +68,8 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         if (Objects.isNull(userFeature)) {
             return false;
         }
-        userFeature.setCreateTime(LocalDateTime.now());
-        userFeature.setUpdateTime(LocalDateTime.now());
+        userFeature.setCreateTime(new Date());
+        userFeature.setUpdateTime(new Date());
         return save(userFeature);
     }
 
@@ -82,7 +83,7 @@ public class UserFeatureService extends ServiceImpl<UserFeatureMapper, UserFeatu
         if (Objects.isNull(userFeature) || Objects.isNull(userFeature.getId())) {
             return false;
         }
-        userFeature.setUpdateTime(LocalDateTime.now());
+        userFeature.setUpdateTime(new Date());
         return updateById(userFeature);
     }
 

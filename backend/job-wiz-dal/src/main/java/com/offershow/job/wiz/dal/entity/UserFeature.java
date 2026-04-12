@@ -7,7 +7,8 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * 用户特征信息实体类
@@ -58,7 +59,7 @@ public class UserFeature implements Serializable {
     /**
      * 毕业时间
      */
-    private LocalDateTime graduationDate;
+    private LocalDate graduationDate;
 
     /**
      * 邮箱
@@ -93,10 +94,10 @@ public class UserFeature implements Serializable {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
 }
