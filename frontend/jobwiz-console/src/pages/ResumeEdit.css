@@ -54,6 +54,28 @@
   color: #ef4444;
 }
 
+.save-btn {
+  padding: 6px 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .resume-edit-body {
   display: flex;
   flex: 1;

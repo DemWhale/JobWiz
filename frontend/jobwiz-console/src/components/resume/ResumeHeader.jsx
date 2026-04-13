@@ -1,6 +1,11 @@
 const ResumeHeader = ({ basics }) => {
   if (!basics) return null;
 
+  // 兼容 url 为对象 {label, href} 或字符串
+  const urlDisplay = basics.url
+    ? (typeof basics.url === 'object' ? (basics.url.href || basics.url.label) : basics.url)
+    : '';
+
   return (
     <div className="resume-header">
       {basics.name && <h1 className="resume-header-name">{basics.name}</h1>}
@@ -21,9 +26,9 @@ const ResumeHeader = ({ basics }) => {
             📍 {basics.location}
           </span>
         )}
-        {basics.url && (
+        {urlDisplay && (
           <span className="resume-header-contact-item">
-            🔗 {basics.url}
+            🔗 {urlDisplay}
           </span>
         )}
       </div>

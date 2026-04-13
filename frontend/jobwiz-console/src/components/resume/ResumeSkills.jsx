@@ -5,18 +5,20 @@ const ResumeSkills = ({ items }) => {
     <div>
       {items.map((item) => {
         if (!item.visible && item.visible !== undefined) return null;
-        const levelPercent = item.level
+        // level 为 1-5 的整数，换算为百分比
+        const levelValue = item.level
           ? typeof item.level === 'number'
             ? item.level
             : parseInt(item.level, 10) || 0
           : 0;
+        const levelPercent = (levelValue / 5) * 100;
         return (
           <div key={item.id} className="resume-skill-item">
             <div className="resume-skill-header">
               <span className="resume-skill-name">{item.name}</span>
-              {item.level && <span className="resume-skill-level">{item.level}%</span>}
+              {levelValue > 0 && <span className="resume-skill-level">{levelValue}/5</span>}
             </div>
-            {levelPercent > 0 && (
+            {levelValue > 0 && (
               <div className="resume-skill-bar">
                 <div
                   className="resume-skill-bar-fill"

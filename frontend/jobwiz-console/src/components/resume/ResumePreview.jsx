@@ -105,12 +105,27 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
     if (!Component) return null;
     const sectionData = sections[sectionId];
     if (!sectionData) return null;
-    const items = Array.isArray(sectionData) ? sectionData : sectionData.items || [];
-    if (items.length === 0) return null;
 
     // 检查整体可见性
     const visible = sectionData.visible !== undefined ? sectionData.visible : true;
     if (!visible) return null;
+
+    // summary 特殊处理：直接传 sectionData 对象
+    if (sectionId === 'summary') {
+      return (
+        <ResumeSectionWrapper
+          key={sectionId}
+          sectionId={sectionId}
+          name={SECTION_NAMES[sectionId] || sectionId}
+          onAnchorClick={onSectionClick}
+        >
+          <ResumeSummary sectionData={sectionData} />
+        </ResumeSectionWrapper>
+      );
+    }
+
+    const items = Array.isArray(sectionData) ? sectionData : sectionData.items || [];
+    if (items.length === 0) return null;
 
     return (
       <ResumeSectionWrapper

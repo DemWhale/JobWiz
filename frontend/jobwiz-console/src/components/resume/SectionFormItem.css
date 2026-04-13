@@ -63,3 +63,23 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* 锚定高亮动画 */
+.section-anchor-highlight {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  animation: anchor-fade 1.5s ease-out;
+}
+
+@keyframes anchor-fade {
+  0% {
+    background-color: rgba(37, 99, 235, 0.12);
+  }
+  70% {
+    background-color: rgba(37, 99, 235, 0.06);
+  }
+  100% {
+    background-color: transparent;
+    outline-color: transparent;
+  }
+}

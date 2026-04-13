@@ -1,11 +1,37 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import FormToolbar from './FormToolbar';
 import SectionFormItem from './SectionFormItem';
 import './ResumeForm.css';
 
-const ResumeForm = ({ resumeData, onChange }) => {
+const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
   const [basics, setBasics] = useState(resumeData?.basics || {});
   const [sections, setSections] = useState(resumeData?.sections || {});
+  const formRef = useRef(null);
+
+  // 暴露 scrollToSection 方法给父组件
+  useImperativeHandle(ref, () => ({
+    scrollToSection: (sectionId) => {
+      if (!formRef.current) return;
+      // 查找目标 section 元素
+      const target = formRef.current.querySelector(`[data-section-id="${sectionId}"]`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 添加高亮动画
+        target.classList.add('section-anchor-highlight');
+        setTimeout(() => {
+          target.classList.remove('section-anchor-highlight');
+        }, 1500);
+      }
+    },
+  }));
+
+  // 同步外部 resumeData 变化（如从后端加载预填充数据）
+  useEffect(() => {
+    if (resumeData) {
+      setBasics(resumeData.basics || {});
+      setSections(resumeData.sections || {});
+    }
+  }, [resumeData]);
 
   // 确保 sections 有默认结构
   const safeSections = {
@@ -59,9 +85,9 @@ const ResumeForm = ({ resumeData, onChange }) => {
   }, [basics, safeSections, onChange]);
 
   return (
-    <div className="resume-form">
+    <div className="resume-form" ref={formRef}>
       {/* 基本信息 */}
-      <SectionFormItem title="基本信息" removable={false}>
+      <SectionFormItem sectionId="basics" title="基本信息" removable={false}>
         <div className="form-avatar-section">
           <div className="avatar-placeholder">
             <span>📷</span>
@@ -129,7 +155,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       </SectionFormItem>
 
       {/* 个人总结 */}
-      <SectionFormItem title="个人总结" removable={false}>
+      <SectionFormItem sectionId="summary" title="个人总结" removable={false}>
         <FormToolbar />
         <textarea
           className="form-textarea"
@@ -144,6 +170,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       {(safeSections.education.length === 0 ? [{}] : safeSections.education).map((edu, index) => (
         <SectionFormItem
           key={edu.id || index}
+          sectionId="education"
           title="教育经历"
           onAdd={() => addSectionItem('education', { id: Date.now(), institution: '', area: '', studyType: '', date: '' })}
           onRemove={safeSections.education.length > 1 ? () => removeSectionItem('education', index) : undefined}
@@ -198,6 +225,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       {(safeSections.experience.length === 0 ? [{}] : safeSections.experience).map((exp, index) => (
         <SectionFormItem
           key={exp.id || index}
+          sectionId="experience"
           title="实习经历"
           onAdd={() => addSectionItem('experience', { id: Date.now(), company: '', position: '', date: '', summary: '' })}
           onRemove={safeSections.experience.length > 1 ? () => removeSectionItem('experience', index) : undefined}
@@ -248,6 +276,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       {(safeSections.projects.length === 0 ? [{}] : safeSections.projects).map((proj, index) => (
         <SectionFormItem
           key={proj.id || index}
+          sectionId="projects"
           title="项目经历"
           onAdd={() => addSectionItem('projects', { id: Date.now(), name: '', date: '', summary: '' })}
           onRemove={safeSections.projects.length > 1 ? () => removeSectionItem('projects', index) : undefined}
@@ -289,6 +318,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       {(safeSections.skills.length === 0 ? [{}] : safeSections.skills).map((skill, index) => (
         <SectionFormItem
           key={skill.id || index}
+          sectionId="skills"
           title="技能"
           onAdd={() => addSectionItem('skills', { id: Date.now(), name: '', level: 3, keywords: [] })}
           onRemove={safeSections.skills.length > 1 ? () => removeSectionItem('skills', index) : undefined}
@@ -351,6 +381,7 @@ const ResumeForm = ({ resumeData, onChange }) => {
       {(safeSections.certifications.length === 0 ? [{}] : safeSections.certifications).map((cert, index) => (
         <SectionFormItem
           key={cert.id || index}
+          sectionId="certifications"
           title="证书"
           onAdd={() => addSectionItem('certifications', { id: Date.now(), name: '', issuer: '', date: '' })}
           onRemove={safeSections.certifications.length > 1 ? () => removeSectionItem('certifications', index) : undefined}
@@ -387,6 +418,6 @@ const ResumeForm = ({ resumeData, onChange }) => {
       ))}
     </div>
   );
-};
+});
 
 export default ResumeForm;

@@ -14,6 +14,7 @@ const ResumeEdit = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const saveTimerRef = useRef(null);
+  const formRef = useRef(null);
 
   useEffect(() => {
     if (!id) return;
@@ -88,14 +89,40 @@ const ResumeEdit = ({ userId }) => {
     }, 500);
   }, [id]);
 
+  // 手动保存（立即执行，不走防抖）
+  const handleManualSave = useCallback(async () => {
+    // 先取消防抖定时器
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    if (!resumeData) return;
+
+    setSaveStatus('saving');
+    try {
+      await resumeApi.update({
+        id: Number(id),
+        resumeDetail: JSON.stringify(resumeData),
+      });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('保存简历失败:', error);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  }, [id, resumeData]);
+
   const handleFormChange = useCallback((newData) => {
     setResumeData(newData);
     debouncedSave(newData);
   }, [debouncedSave]);
 
   const handleSectionClick = (sectionId) => {
-    // TODO: Spec E — 反向锚定到左侧表单
-    console.log('Section clicked:', sectionId);
+    // 点击右侧 section 时，锚定到左侧对应表单
+    if (formRef.current) {
+      formRef.current.scrollToSection(sectionId);
+    }
   };
 
   const handleBack = () => {
@@ -120,12 +147,20 @@ const ResumeEdit = ({ userId }) => {
           {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
           {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
         </div>
+        <button
+          className="save-btn"
+          onClick={handleManualSave}
+          disabled={saveStatus === 'saving'}
+        >
+          {saveStatus === 'saving' ? '保存中...' : '保存'}
+        </button>
       </div>
       <div className="resume-edit-body">
         {/* 左侧：编辑表单 */}
         <div className="resume-edit-left">
           {resumeData && (
             <ResumeForm
+              ref={formRef}
               resumeData={resumeData}
               onChange={handleFormChange}
             />

@@ -1,8 +1,8 @@
 import './SectionFormItem.css';
 
-const SectionFormItem = ({ title, children, onAdd, onRemove, removable = true }) => {
+const SectionFormItem = ({ sectionId, title, children, onAdd, onRemove, removable = true }) => {
   return (
-    <div className="section-form-item">
+    <div className="section-form-item" data-section-id={sectionId}>
       <div className="section-form-header">
         <h3 className="section-form-title">{title}</h3>
         <div className="section-form-actions">

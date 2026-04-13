@@ -1,11 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import ChatWindow from '../components/ChatWindow';
 import InputArea from '../components/InputArea';
 import './Home.css';
 
 const Home = ({ userId, userFeature }) => {
+  const navigate = useNavigate();
+
   const handleCardClick = (cardType) => {
+    if (cardType === 'create-resume') {
+      navigate('/resumes');
+      return;
+    }
     console.log('Card clicked:', cardType);
-    // TODO: 后续实现各卡片跳转
+    // TODO: 后续实现其他卡片跳转
   };
 
   const handleSendMessage = (message) => {
