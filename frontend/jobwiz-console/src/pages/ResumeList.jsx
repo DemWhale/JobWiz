@@ -85,9 +85,15 @@ const ResumeList = ({ userId }) => {
     setShowTemplateSelector(true);
   };
 
-  const handleTemplateSelect = (resumeId) => {
+  const handleTemplateSelect = (draftInfo) => {
     setShowTemplateSelector(false);
-    navigate(`/resume/edit/${resumeId}`);
+    // 草稿模式：跳转到编辑页，通过 navigate state 传递草稿数据
+    navigate('/resume/edit/new', {
+      state: {
+        templateId: draftInfo.templateId,
+        resumeData: draftInfo.resumeData,
+      },
+    });
   };
 
   const handleAICreate = () => {

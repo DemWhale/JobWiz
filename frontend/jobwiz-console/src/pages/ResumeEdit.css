@@ -46,6 +46,11 @@
   color: #6b7280;
 }
 
+.status-draft {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
 .status-saved {
   color: #10b981;
 }

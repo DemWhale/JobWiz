@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { resumeTemplateApi, resumeApi } from '../services/api';
+import { resumeTemplateApi } from '../services/api';
 import './TemplateSelector.css';
 
 // 预填充简历数据（基于 .cache/resume.json）
@@ -81,7 +81,6 @@ const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -107,48 +106,25 @@ const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
     setSelectedId(id);
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!selectedId || !userId) return;
-    setCreating(true);
-    try {
-      // 创建简历，使用预填充数据
-      const resume = await resumeApi.create({
-        userId: Number(userId),
+    // 不调后端，仅传递草稿数据
+    if (onSelect) {
+      onSelect({
         templateId: selectedId,
-        title: '未命名简历',
-        resumeDetail: JSON.stringify(DEFAULT_RESUME_DATA),
+        resumeData: DEFAULT_RESUME_DATA,
       });
-
-      if (onSelect) {
-        onSelect(resume.id);
-      }
-    } catch (error) {
-      console.error('创建简历失败:', error);
-      alert('创建简历失败，请重试');
-    } finally {
-      setCreating(false);
     }
   };
 
-  const handleBlankCreate = async () => {
+  const handleBlankCreate = () => {
     if (!userId) return;
-    setCreating(true);
-    try {
-      const resume = await resumeApi.create({
-        userId: Number(userId),
+    // 不调后端，仅传递草稿数据
+    if (onSelect) {
+      onSelect({
         templateId: null,
-        title: '未命名简历',
-        resumeDetail: JSON.stringify(DEFAULT_RESUME_DATA),
+        resumeData: DEFAULT_RESUME_DATA,
       });
-
-      if (onSelect) {
-        onSelect(resume.id);
-      }
-    } catch (error) {
-      console.error('创建空白简历失败:', error);
-      alert('创建简历失败，请重试');
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -208,10 +184,10 @@ const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
           <button className="btn-cancel" onClick={onClose}>取消</button>
           <button
             className="btn-confirm"
-            disabled={!selectedId || creating}
+            disabled={!selectedId}
             onClick={handleConfirm}
           >
-            {creating ? '创建中...' : '使用此模板'}
+            使用此模板
           </button>
         </div>
       </div>

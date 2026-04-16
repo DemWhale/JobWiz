@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { resumeApi, resumeTemplateApi } from '../services/api';
 import ResumePreview from '../components/resume/ResumePreview';
 import ResumeForm from '../components/resume/ResumeForm';
@@ -8,15 +8,35 @@ import './ResumeEdit.css';
 const ResumeEdit = ({ userId }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isNewDraft = id === 'new'; // 草稿模式标记
   const [resume, setResume] = useState(null);
   const [templateMeta, setTemplateMeta] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error' | 'draft'
+  const [savedResumeId, setSavedResumeId] = useState(null);
   const saveTimerRef = useRef(null);
   const formRef = useRef(null);
 
+  // 已持久化的简历 ID（草稿首次保存后才有）
+  const effectiveId = savedResumeId || (!isNewDraft ? id : null);
+
   useEffect(() => {
+    if (isNewDraft) {
+      // 草稿模式：从 location.state 初始化，无需后端加载
+      const state = location.state;
+      if (state?.resumeData) {
+        setResumeData(state.resumeData);
+      }
+      if (state?.templateId) {
+        fetchTemplateMeta(state.templateId);
+      }
+      setSaveStatus('draft');
+      setLoading(false); // 草稿模式直接完成加载
+      return;
+    }
+
     if (!id) return;
     fetchResume();
   }, [id]);
@@ -48,19 +68,24 @@ const ResumeEdit = ({ userId }) => {
 
       // 获取模板 meta
       if (data?.templateId) {
-        try {
-          const template = await resumeTemplateApi.getById(data.templateId);
-          if (template?.meta) {
-            setTemplateMeta(JSON.parse(template.meta));
-          }
-        } catch (e) {
-          console.log('获取模板信息失败，使用默认布局');
-        }
+        fetchTemplateMeta(data.templateId);
       }
     } catch (error) {
       console.error('获取简历失败:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取模板 meta（草稿和已有简历共用）
+  const fetchTemplateMeta = async (templateId) => {
+    try {
+      const template = await resumeTemplateApi.getById(templateId);
+      if (template?.meta) {
+        setTemplateMeta(JSON.parse(template.meta));
+      }
+    } catch (e) {
+      console.log('获取模板信息失败，使用默认布局');
     }
   };
 
@@ -70,12 +95,18 @@ const ResumeEdit = ({ userId }) => {
       clearTimeout(saveTimerRef.current);
     }
 
+    // 草稿模式（还未持久化），仅维护本地状态，不调后端
+    if (!effectiveId) {
+      setSaveStatus('draft');
+      return;
+    }
+
     setSaveStatus('saving');
 
     saveTimerRef.current = setTimeout(async () => {
       try {
         await resumeApi.update({
-          id: Number(id),
+          id: Number(effectiveId),
           resumeDetail: JSON.stringify(data),
         });
         setSaveStatus('saved');
@@ -87,7 +118,7 @@ const ResumeEdit = ({ userId }) => {
         setTimeout(() => setSaveStatus('idle'), 3000);
       }
     }, 500);
-  }, [id]);
+  }, [effectiveId]);
 
   // 手动保存（立即执行，不走防抖）
   const handleManualSave = useCallback(async () => {
@@ -100,18 +131,35 @@ const ResumeEdit = ({ userId }) => {
 
     setSaveStatus('saving');
     try {
-      await resumeApi.update({
-        id: Number(id),
-        resumeDetail: JSON.stringify(resumeData),
-      });
-      setSaveStatus('saved');
+      if (!effectiveId) {
+        // 草稿首次保存：调用 create 创建简历
+        const state = location.state || {};
+        const created = await resumeApi.create({
+          userId: Number(userId),
+          templateId: state.templateId || null,
+          title: '未命名简历',
+          resumeDetail: JSON.stringify(resumeData),
+        });
+        setSavedResumeId(created.id);
+        setResume(created);
+        setSaveStatus('saved');
+        // 更新 URL 为正式的编辑页（不刷新页面）
+        navigate(`/resume/edit/${created.id}`, { replace: true, state: null });
+      } else {
+        // 已有 ID，直接 update
+        await resumeApi.update({
+          id: Number(effectiveId),
+          resumeDetail: JSON.stringify(resumeData),
+        });
+        setSaveStatus('saved');
+      }
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('保存简历失败:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [id, resumeData]);
+  }, [effectiveId, resumeData, userId, location.state, navigate]);
 
   const handleFormChange = useCallback((newData) => {
     setResumeData(newData);
@@ -143,6 +191,7 @@ const ResumeEdit = ({ userId }) => {
           {resume?.title || '未命名简历'}
         </h1>
         <div className="save-status">
+          {saveStatus === 'draft' && <span className="status-draft">草稿（未保存）</span>}
           {saveStatus === 'saving' && <span className="status-saving">保存中...</span>}
           {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
           {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
@@ -152,7 +201,7 @@ const ResumeEdit = ({ userId }) => {
           onClick={handleManualSave}
           disabled={saveStatus === 'saving'}
         >
-          {saveStatus === 'saving' ? '保存中...' : '保存'}
+          {saveStatus === 'saving' ? '保存中...' : (isNewDraft && !savedResumeId ? '保存草稿' : '保存')}
         </button>
       </div>
       <div className="resume-edit-body">

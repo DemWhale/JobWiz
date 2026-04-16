@@ -153,14 +153,6 @@ function App() {
         }
       />
       <Route 
-        path="/resume/new" 
-        element={
-          <ProtectedRoute>
-            <div className="placeholder-page">新建简历（Spec C）</div>
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
         path="/resume/edit/:id" 
         element={
           <ProtectedRoute>
