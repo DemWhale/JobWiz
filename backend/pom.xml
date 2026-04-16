@@ -91,7 +91,7 @@
             <!-- 第三方依赖 -->
             <dependency>
                 <groupId>io.agentscope</groupId>
-                <artifactId>agentscope-spring-boot-starter</artifactId>
+                <artifactId>agentscope</artifactId>
                 <version>${agentscope.version}</version>
             </dependency>
             <dependency>

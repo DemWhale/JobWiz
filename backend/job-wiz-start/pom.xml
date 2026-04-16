@@ -26,10 +26,6 @@
             <groupId>com.offershow</groupId>
             <artifactId>job-wiz-service</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.agentscope</groupId>
-            <artifactId>agentscope-spring-boot-starter</artifactId>
-        </dependency>
     </dependencies>
 
 </project>
