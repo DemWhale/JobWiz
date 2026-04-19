@@ -97,8 +97,8 @@ const ResumeList = ({ userId }) => {
   };
 
   const handleAICreate = () => {
-    // TODO: AI 创建简历，后续 Spec E 实现
-    console.log('AI 创建简历');
+    // 跳转到 AI 信息收集表单页
+    navigate('/resume/ai-create');
   };
 
   const handleImport = () => {

@@ -10,6 +10,7 @@ const ResumeEdit = ({ userId }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isNewDraft = id === 'new'; // 草稿模式标记
+  const isAIMode = location.state?.mode === 'ai' || new URLSearchParams(location.search).get('mode') === 'ai'; // AI 模式
   const [resume, setResume] = useState(null);
   const [templateMeta, setTemplateMeta] = useState(null);
   const [resumeData, setResumeData] = useState(null);
@@ -26,6 +27,21 @@ const ResumeEdit = ({ userId }) => {
     if (isNewDraft) {
       // 草稿模式：从 location.state 初始化，无需后端加载
       const state = location.state;
+      
+      if (isAIMode) {
+        // AI 模式：使用传入的 resumeData 和 userInfo
+        if (state?.resumeData) {
+          setResumeData(state.resumeData);
+        }
+        if (state?.templateId) {
+          fetchTemplateMeta(state.templateId);
+        }
+        setSaveStatus('draft');
+        setLoading(false);
+        return;
+      }
+      
+      // 普通草稿模式
       if (state?.resumeData) {
         setResumeData(state.resumeData);
       }
@@ -39,7 +55,7 @@ const ResumeEdit = ({ userId }) => {
 
     if (!id) return;
     fetchResume();
-  }, [id]);
+  }, [id, isAIMode]);
 
   // 清理定时器
   useEffect(() => {
@@ -193,13 +209,13 @@ const ResumeEdit = ({ userId }) => {
   }
 
   return (
-    <div className="resume-edit-container">
+    <div className={`resume-edit-container ${isAIMode ? 'ai-mode' : ''}`}>
       <div className="resume-edit-header">
         <button className="back-btn" onClick={handleBack}>
           ← 返回列表
         </button>
         <h1 className="resume-edit-title">
-          {resume?.title || '未命名简历'}
+          {resume?.title || resumeData?.title || '未命名简历'}
         </h1>
         <div className="save-status">
           {saveStatus === 'draft' && <span className="status-draft">草稿（未保存）</span>}
@@ -216,24 +232,56 @@ const ResumeEdit = ({ userId }) => {
         </button>
       </div>
       <div className="resume-edit-body">
-        {/* 左侧：编辑表单 */}
-        <div className="resume-edit-left">
-          {resumeData && (
-            <ResumeForm
-              ref={formRef}
-              resumeData={resumeData}
-              onChange={handleFormChange}
-            />
-          )}
-        </div>
-        {/* 右侧：渲染预览 */}
-        <div className="resume-edit-right">
-          <ResumePreview
-            resumeData={resumeData}
-            templateMeta={templateMeta}
-            onSectionClick={handleSectionClick}
-          />
-        </div>
+        {isAIMode ? (
+          /* AI 模式: 左侧聊天流 + 右侧简历预览 */
+          <>
+            <div className="resume-edit-left ai-chat-panel">
+              {/* TODO: 集成 AIChatPanel */}
+              <div className="ai-chat-placeholder">
+                <h3>💬 AI 对话</h3>
+                <p>请输入您的简历需求,AI 将为您生成和优化简历内容</p>
+                <div className="chat-messages-placeholder">
+                  <div className="message assistant">
+                    <div className="message-content">
+                      您好！我是您的 AI 简历助手。请告诉我您的求职意向、工作经历等信息,我将为您生成一份专业简历。
+                    </div>
+                  </div>
+                </div>
+                <div className="chat-input-placeholder">
+                  <input type="text" placeholder="输入您的需求,例如: 帮我写一段后端开发的工经验..." />
+                  <button>发送</button>
+                </div>
+              </div>
+            </div>
+            <div className="resume-edit-right">
+              <ResumePreview
+                resumeData={resumeData}
+                templateMeta={templateMeta}
+                onSectionClick={handleSectionClick}
+              />
+            </div>
+          </>
+        ) : (
+          /* 普通模式: 左侧表单 + 右侧预览 */
+          <>
+            <div className="resume-edit-left">
+              {resumeData && (
+                <ResumeForm
+                  ref={formRef}
+                  resumeData={resumeData}
+                  onChange={handleFormChange}
+                />
+              )}
+            </div>
+            <div className="resume-edit-right">
+              <ResumePreview
+                resumeData={resumeData}
+                templateMeta={templateMeta}
+                onSectionClick={handleSectionClick}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
