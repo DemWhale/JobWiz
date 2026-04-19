@@ -73,7 +73,6 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
         if (Objects.isNull(resume) || Objects.isNull(resume.getId())) {
             return false;
         }
-        resume.setGmtModified(new Date());
         return updateById(resume);
     }
 

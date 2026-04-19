@@ -356,73 +356,98 @@ export class AguiClient {
    * @param callbacks 事件回调
    */
   private dispatchEvent(event: AguiEvent, callbacks: AguiCallbacks): void {
-    switch (event.type) {
-      case 'RunStarted':
+    const eventType = (event as any).type;
+    
+    // 匹配后端 @JsonSubTypes 定义的事件类型
+    switch (eventType) {
+      // Lifecycle events
+      case 'RUN_STARTED':
         callbacks.onRunStarted?.(event as RunStartedEvent);
         break;
 
-      case 'RunFinished':
+      case 'RUN_FINISHED':
         callbacks.onRunFinished?.(event as RunFinishedEvent);
         break;
 
-      case 'RunError':
+      case 'RUN_ERROR':
         callbacks.onRunError?.(event as RunErrorEvent);
         break;
 
-      case 'StepStarted':
-        callbacks.onStepStarted?.(event as StepStartedEvent);
-        break;
-
-      case 'StepFinished':
-        callbacks.onStepFinished?.(event as StepFinishedEvent);
-        break;
-
-      case 'TextMessageStart':
+      // Text message events
+      case 'TEXT_MESSAGE_START':
         callbacks.onTextMessageStart?.(event as TextMessageStartEvent);
         break;
 
-      case 'TextMessageContent':
+      case 'TEXT_MESSAGE_CONTENT':
         callbacks.onTextMessageContent?.(event as TextMessageContentEvent);
         break;
 
-      case 'TextMessageEnd':
+      case 'TEXT_MESSAGE_END':
         callbacks.onTextMessageEnd?.(event as TextMessageEndEvent);
         break;
 
-      case 'TextMessageChunk':
-        callbacks.onTextMessageChunk?.(event as TextMessageChunkEvent);
-        break;
-
-      case 'ToolCallStart':
+      // Tool call events
+      case 'TOOL_CALL_START':
         callbacks.onToolCallStart?.(event as ToolCallStartEvent);
         break;
 
-      case 'ToolCallArgs':
+      case 'TOOL_CALL_ARGS':
         callbacks.onToolCallArgs?.(event as ToolCallArgsEvent);
         break;
 
-      case 'ToolCallEnd':
+      case 'TOOL_CALL_END':
         callbacks.onToolCallEnd?.(event as ToolCallEndEvent);
         break;
 
-      case 'StateSnapshot':
+      case 'TOOL_CALL_RESULT':
+        // ToolCallResult 事件(目前不需要处理)
+        break;
+
+      // State management events
+      case 'STATE_SNAPSHOT':
         callbacks.onStateSnapshot?.(event as StateSnapshotEvent);
         break;
 
-      case 'StateDelta':
+      case 'STATE_DELTA':
         callbacks.onStateDelta?.(event as StateDeltaEvent);
         break;
 
-      case 'CustomActivity':
-        callbacks.onCustomActivity?.(event as CustomActivityEvent);
+      // Special events
+      case 'RAW':
+        // RAW 事件(目前不需要处理)
         break;
 
-      case 'CustomEvent':
+      case 'CUSTOM':
         callbacks.onCustomEvent?.(event as CustomEvent);
         break;
 
+      // Reasoning events
+      case 'REASONING_START':
+        // ReasoningStart 事件(目前不需要处理)
+        break;
+
+      case 'REASONING_MESSAGE_START':
+        // ReasoningMessageStart 事件(目前不需要处理)
+        break;
+
+      case 'REASONING_MESSAGE_CONTENT':
+        // ReasoningMessageContent 事件(目前不需要处理)
+        break;
+
+      case 'REASONING_MESSAGE_END':
+        // ReasoningMessageEnd 事件(目前不需要处理)
+        break;
+
+      case 'REASONING_MESSAGE_CHUNK':
+        // ReasoningMessageChunk 事件(目前不需要处理)
+        break;
+
+      case 'REASONING_END':
+        // ReasoningEnd 事件(目前不需要处理)
+        break;
+
       default:
-        console.warn('[AGUI] Unknown event type:', (event as any).type, event);
+        console.warn('[AGUI] Unknown event type:', eventType, event);
     }
   }
 

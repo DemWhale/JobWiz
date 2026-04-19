@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { resumeApi, resumeTemplateApi } from '../services/api';
 import ResumePreview from '../components/resume/ResumePreview';
 import ResumeForm from '../components/resume/ResumeForm';
+import AIChatPanel from '../components/resume/AIChatPanel';
 import './ResumeEdit.css';
 
 const ResumeEdit = ({ userId }) => {
@@ -236,22 +237,11 @@ const ResumeEdit = ({ userId }) => {
           /* AI 模式: 左侧聊天流 + 右侧简历预览 */
           <>
             <div className="resume-edit-left ai-chat-panel">
-              {/* TODO: 集成 AIChatPanel */}
-              <div className="ai-chat-placeholder">
-                <h3>💬 AI 对话</h3>
-                <p>请输入您的简历需求,AI 将为您生成和优化简历内容</p>
-                <div className="chat-messages-placeholder">
-                  <div className="message assistant">
-                    <div className="message-content">
-                      您好！我是您的 AI 简历助手。请告诉我您的求职意向、工作经历等信息,我将为您生成一份专业简历。
-                    </div>
-                  </div>
-                </div>
-                <div className="chat-input-placeholder">
-                  <input type="text" placeholder="输入您的需求,例如: 帮我写一段后端开发的工经验..." />
-                  <button>发送</button>
-                </div>
-              </div>
+              <AIChatPanel
+                userInfo={location.state?.userInfo}
+                resumeData={resumeData}
+                onUpdateResumeData={handleFormChange}
+              />
             </div>
             <div className="resume-edit-right">
               <ResumePreview

@@ -85,14 +85,25 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: calc(100vh - 60px); /* 减去 header 高度 */
 }
 
 .resume-edit-left {
   width: 480px;
   min-width: 480px;
   border-right: 1px solid var(--border-color);
-  overflow-y: hidden;
+  overflow: hidden;
   background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+}
+
+/* AI 模式下的左侧 */
+.resume-edit-container.ai-mode .resume-edit-left {
+  width: 45%;
+  min-width: 400px;
+  background: white;
+  border-right: 2px solid var(--border-color);
 }
 
 .resume-edit-placeholder {
@@ -114,6 +125,13 @@
   flex: 1;
   overflow-y: auto;
   background: #e5e7eb;
+  min-width: 0; /* 防止内容溢出 */
+}
+
+/* AI 模式下的右侧 */
+.resume-edit-container.ai-mode .resume-edit-right {
+  width: 55%;
+  background: #f0f0f0;
 }
 
 .resume-edit-loading {
