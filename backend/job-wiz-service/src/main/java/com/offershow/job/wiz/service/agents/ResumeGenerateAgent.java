@@ -1,17 +1,15 @@
-package com.offershow.job.wiz.common.agents;
+package com.offershow.job.wiz.service.agents;
 
 import com.offershow.job.wiz.common.dto.context.AgentContext;
 import com.offershow.job.wiz.common.skills.ResumeInitSkill;
 import com.offershow.job.wiz.common.skills.ResumePolishSkill;
 import com.offershow.job.wiz.common.tools.IndustryResumeTool;
 import io.agentscope.core.ReActAgent;
-import io.agentscope.core.agent.Agent;
 import io.agentscope.core.memory.InMemoryMemory;
 import io.agentscope.core.model.DashScopeChatModel;
 import io.agentscope.core.skill.SkillBox;
 import io.agentscope.core.tool.Toolkit;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 

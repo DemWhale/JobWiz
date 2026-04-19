@@ -25,6 +25,11 @@ public class AgentContext implements Serializable {
     private String userId;
 
     /**
+     * Agent ID
+     */
+    private String agentId;
+
+    /**
      *
      */
     private String threadId;
