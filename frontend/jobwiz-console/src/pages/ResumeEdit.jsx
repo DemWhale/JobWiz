@@ -20,6 +20,10 @@ const ResumeEdit = ({ userId }) => {
   const [savedResumeId, setSavedResumeId] = useState(null);
   const saveTimerRef = useRef(null);
   const formRef = useRef(null);
+  
+  // 拖拽分割线状态
+  const [leftWidth, setLeftWidth] = useState(40); // 百分比
+  const isDragging = useRef(false);
 
   // 已持久化的简历 ID（草稿首次保存后才有）
   const effectiveId = savedResumeId || (!isNewDraft ? id : null);
@@ -66,6 +70,43 @@ const ResumeEdit = ({ userId }) => {
       }
     };
   }, []);
+
+  // 拖拽分割线逻辑
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging.current) return;
+      
+      const container = document.querySelector('.resume-edit-body');
+      if (!container) return;
+      
+      const rect = container.getBoundingClientRect();
+      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+      
+      // 限制在 30%-70% 之间
+      setLeftWidth(Math.min(Math.max(percentage, 30), 70));
+    };
+
+    const handleMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  };
 
   const fetchResume = async () => {
     try {
@@ -211,44 +252,70 @@ const ResumeEdit = ({ userId }) => {
 
   return (
     <div className={`resume-edit-container ${isAIMode ? 'ai-mode' : ''}`}>
-      <div className="resume-edit-header">
-        <button className="back-btn" onClick={handleBack}>
-          ← 返回列表
-        </button>
-        <h1 className="resume-edit-title">
-          {resume?.title || resumeData?.title || '未命名简历'}
-        </h1>
-        <div className="save-status">
-          {saveStatus === 'draft' && <span className="status-draft">草稿（未保存）</span>}
-          {saveStatus === 'saving' && <span className="status-saving">保存中...</span>}
-          {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
-          {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
+      {/* AI 模式不需要 header */}
+      {!isAIMode && (
+        <div className="resume-edit-header">
+          <button className="back-btn" onClick={handleBack}>
+            ← 返回列表
+          </button>
+          <h1 className="resume-edit-title">
+            {resume?.title || resumeData?.title || '未命名简历'}
+          </h1>
+          <div className="save-status">
+            {saveStatus === 'draft' && <span className="status-draft">草稿（未保存）</span>}
+            {saveStatus === 'saving' && <span className="status-saving">保存中...</span>}
+            {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
+            {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
+          </div>
+          <button
+            className="save-btn"
+            onClick={handleManualSave}
+            disabled={saveStatus === 'saving'}
+          >
+            {saveStatus === 'saving' ? '保存中...' : (isNewDraft && !savedResumeId ? '保存草稿' : '保存')}
+          </button>
         </div>
-        <button
-          className="save-btn"
-          onClick={handleManualSave}
-          disabled={saveStatus === 'saving'}
-        >
-          {saveStatus === 'saving' ? '保存中...' : (isNewDraft && !savedResumeId ? '保存草稿' : '保存')}
-        </button>
-      </div>
+      )}
       <div className="resume-edit-body">
         {isAIMode ? (
           /* AI 模式: 左侧聊天流 + 右侧简历预览 */
           <>
-            <div className="resume-edit-left ai-chat-panel">
+            {/* 左侧 Chat 区 */}
+            <div className="resume-edit-left" style={{ width: `${leftWidth}%`, minWidth: `${leftWidth}%` }}>
               <AIChatPanel
                 userInfo={location.state?.userInfo}
                 resumeData={resumeData}
                 onUpdateResumeData={handleFormChange}
               />
             </div>
-            <div className="resume-edit-right">
-              <ResumePreview
-                resumeData={resumeData}
-                templateMeta={templateMeta}
-                onSectionClick={handleSectionClick}
-              />
+            
+            {/* 拖拽分割线 */}
+            <div 
+              className="resize-handle"
+              onMouseDown={handleMouseDown}
+            />
+            
+            {/* 右侧简历区 */}
+            <div className="resume-edit-right" style={{ width: `${100 - leftWidth}%`, minWidth: `${100 - leftWidth}%` }}>
+              <div className="resume-preview-header">
+                <h2 className="resume-preview-title">
+                  {resume?.title || resumeData?.title || '未命名简历'}
+                </h2>
+                <button
+                  className="save-btn"
+                  onClick={handleManualSave}
+                  disabled={saveStatus === 'saving'}
+                >
+                  {saveStatus === 'saving' ? '保存中...' : (isNewDraft && !savedResumeId ? '保存草稿' : '保存')}
+                </button>
+              </div>
+              <div className="resume-preview-content">
+                <ResumePreview
+                  resumeData={resumeData}
+                  templateMeta={templateMeta}
+                  onSectionClick={handleSectionClick}
+                />
+              </div>
             </div>
           </>
         ) : (

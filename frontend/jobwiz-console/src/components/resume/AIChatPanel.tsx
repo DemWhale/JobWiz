@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { aguiClient, type AguiCallbacks, type TextMessageContentEvent } from '../../services/agui';
 import './AIChatPanel.css';
 
@@ -31,6 +31,8 @@ interface AIChatPanelProps {
     industry: string;
     targetPosition: string;
     targetCity: string;
+    prefillMessage?: string;  // 预填信息
+    autoSend?: boolean;       // 是否自动发送
   };
   /** 当前简历数据 */
   resumeData: ResumeData | null;
@@ -87,13 +89,102 @@ export default function AIChatPanel({ userInfo, resumeData, onUpdateResumeData }
         content: welcomeContent
       };
       setMessages([welcomeMsg]);
+
+      // 如果有预填信息,自动填充到 input
+      if (userInfo?.prefillMessage) {
+        setInput(userInfo.prefillMessage);
+        
+        // 如果需要自动发送,延迟 500ms 后自动发送
+        if (userInfo.autoSend) {
+          // 直接使用 input 值发送,不依赖 handleSend
+          setTimeout(() => {
+            const prefillContent = userInfo.prefillMessage;
+            if (!prefillContent || isStreaming) return;
+
+            const userMessage: Message = {
+              id: `msg_${Date.now()}`,
+              role: 'user',
+              content: prefillContent
+            };
+            setMessages(prev => [...prev, userMessage]);
+            setInput('');
+            setIsStreaming(true);
+
+            const messageId = `assistant_msg_${Date.now()}`;
+            setMessages(prev => [...prev, {
+              id: messageId,
+              role: 'assistant',
+              content: '',
+              streaming: true
+            }]);
+
+            // 调用 AGUI
+            aguiClient.connect({
+              agentId: 'default',
+              message: prefillContent,
+              forwardedProps: {
+                userId: '1',
+                currentStep: 'polish',
+                resumeDraft: resumeData
+              },
+              callbacks: {
+                onRunStarted: (event) => {
+                  console.log('[AGUI] Run started:', event.threadId);
+                  setThreadId(event.threadId);
+                },
+                onTextMessageContent: (event: TextMessageContentEvent) => {
+                  console.log('[AGUI] TextMessageContent:', event.delta);
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === messageId 
+                      ? { ...msg, content: msg.content + (event.delta || '') }
+                      : msg
+                  ));
+                },
+                onTextMessageChunk: (event) => {
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === messageId 
+                      ? { ...msg, content: msg.content + (event.delta || '') }
+                      : msg
+                  ));
+                },
+                onRunFinished: () => {
+                  console.log('[AGUI] Run finished');
+                  setIsStreaming(false);
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === messageId 
+                      ? { ...msg, streaming: false }
+                      : msg
+                  ));
+                },
+                onRunError: (event) => {
+                  console.error('[AGUI] Run error:', event.message);
+                  setMessages(prev => [...prev, {
+                    id: `error_${Date.now()}`,
+                    role: 'error',
+                    content: '调用失败: ' + (event.message || '未知错误')
+                  }]);
+                  setIsStreaming(false);
+                }
+              }
+            }).catch(err => {
+              console.error('AGUI 调用失败:', err);
+              setMessages(prev => [...prev, {
+                id: `error_${Date.now()}`,
+                role: 'error',
+                content: '调用失败: ' + (err instanceof Error ? err.message : '未知错误')
+              }]);
+              setIsStreaming(false);
+            });
+          }, 500);
+        }
+      }
     }
   }, []);
 
   /**
    * 处理发送消息
    */
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!input.trim() || isStreaming) return;
 
     const userMessage: Message = {
@@ -195,7 +286,7 @@ export default function AIChatPanel({ userInfo, resumeData, onUpdateResumeData }
       }]);
       setIsStreaming(false);
     }
-  };
+  }, [input, isStreaming, userInfo, messages.length, threadId, resumeData]);
 
   return (
     <div className="ai-chat-panel">

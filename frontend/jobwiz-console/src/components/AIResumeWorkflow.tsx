@@ -11,142 +11,89 @@ interface UserInfo {
 }
 
 /**
- * AI 简历信息收集表单
+ * AI 简历入口组件
  * 
- * 新流程:
- * - 用户填写基础信息
- * - 提交后跳转到 /resume/edit/new (mode=ai)
- * - 在编辑页通过聊天流与 Agent 交互
+ * 新流程: 直接跳转到编辑页(AI 模式),不再显示表单
  */
 export default function AIResumeWorkflow() {
   const navigate = useNavigate();
-  
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    name: '',
-    industry: '',
-    targetPosition: '',
-    targetCity: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /**
-   * 处理表单提交: 跳转到编辑页(AI 模式)
-   */
-  const handleSubmit = async () => {
-    if (!userInfo.name || !userInfo.industry || !userInfo.targetPosition) {
-      alert('请填写必填字段');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // 构建初始 resumeData (符合 data.json schema)
-      const initialResumeData = {
-        content: {
-          modules: []  // 初始为空,等待 AI 生成
+  // 默认测试数据
+  const defaultResumeData = {
+    content: {
+      modules: [
+        {
+          name: 'baseinfo',
+          modulename: '基础信息',
+          is_open: true,
+          child: [
+            { name: '张三', title: '后端开发工程师', email: 'zhangsan@example.com', phone: '13800138000' }
+          ]
         },
-        css_config: {
-          global: {
-            fontColor: '#363636',
-            fontFamily: 'PingFang SC,Microsoft Yahei',
-            fontSize: 12,
-            lineHeight: 1.45,
-            themeColor: '#001a66'
-          }
+        {
+          name: 'eduabout',
+          modulename: '教育经历',
+          is_open: true,
+          child: [
+            {
+              school: '北京大学',
+              major: '计算机科学与技术',
+              time: '2022-09 - 2026-06',
+              degree: '本科',
+              description: '主修课程包括数据结构与算法、操作系统、计算机网络、数据库系统、软件工程、人工智能导论等，平均学分绩点（GPA）达到 3.8/4.0。\n\n积极参与学院组织的科研项目和技术讲座，拓宽专业视野，提升解决复杂问题的能力。\n\n荣获校级三好学生荣誉称号，并在 ACM 程序设计竞赛中获得二等奖。'
+            }
+          ]
         },
-        template_id: 1,  // 固定模板
-        title: `${userInfo.name}_${userInfo.targetPosition}`,
-        user_id: 1,  // TODO: 从登录态获取
-        share_status: 0
-      };
-
-      // 跳转到编辑页,传递 userInfo 和初始数据
-      navigate('/resume/edit/new', {
-        state: {
-          mode: 'ai',
-          userInfo,  // 用户填写的信息,用于首次调用 Agent
-          resumeData: initialResumeData,
-          templateId: 1
+        {
+          name: 'projectabout',
+          modulename: '项目经历',
+          is_open: true,
+          child: [
+            {
+              projectname: '基于深度学习的智能推荐系统',
+              time: '2024-03 - 2024-08',
+              description: '负责系统架构设计和核心算法实现，基于 Python 与 TensorFlow 构建深度学习模型，实现用户行为预测与商品推荐。\n\n收集并处理了超过 10 万条用户行为数据，通过特征工程将数据维度提升 20%，有效提升模型训练效率。\n\n优化推荐算法，使系统推荐准确率提升了 15%，用户点击率提高了 8%，并在期末项目评比中获得 A+。\n\n撰写项目报告，详细阐述了模型原理、实验过程与结果分析，展示了扎实的理论基础和实践能力。'
+            },
+            {
+              projectname: '校园二手交易平台开发',
+              time: '2023-09 - 2024-01',
+              description: '独立设计并开发了基于 Spring Boot 后端框架和 Vue.js 前端框架的校园二手交易平台。\n\n实现了用户注册登录、商品发布、浏览搜索、在线聊天、订单管理等核心功能模块。\n\n采用 MySQL 数据库进行数据存储，并设计了高效的数据库表结构，确保数据访问速度和系统稳定性。\n\n通过压力测试，系统支持 500+并发用户，并在校内小范围测试中获得师生一致好评，用户反馈积极，日均活跃用户达[XX]人。'
+            }
+          ]
         }
-      });
-    } catch (error) {
-      console.error('提交失败:', error);
-      alert('提交失败,请重试');
-    } finally {
-      setIsSubmitting(false);
-    }
+      ]
+    },
+    css_config: {
+      global: {
+        fontColor: '#363636',
+        fontFamily: 'PingFang SC,Microsoft Yahei',
+        fontSize: 12,
+        lineHeight: 1.45,
+        themeColor: '#001a66'
+      }
+    },
+    template_id: 1,
+    title: '张三_后端开发工程师',
+    user_id: 1,
+    share_status: 0
   };
 
-  return (
-    <div className="ai-resume-workflow">
-      <div className="workflow-header">
-        <button className="back-btn" onClick={() => navigate('/resumes')}>
-          ← 返回简历列表
-        </button>
-        <h1>AI 简历一键生成</h1>
-        <p className="workflow-subtitle">
-          基于您的个人信息和职业背景,为您量身定制专业简历
-        </p>
-      </div>
+  // 直接跳转到编辑页
+  navigate('/resume/edit/new', {
+    state: {
+      mode: 'ai',
+      userInfo: {
+        name: '张三',
+        industry: '互联网',
+        targetPosition: '后端开发工程师',
+        targetCity: '北京',
+        prefillMessage: `请帮我基于以下信息创建一份简历：\n\n教育经历\n北京大学 计算机科学与技术 2022-09 - 2026-06 本科\n主修课程包括数据结构与算法、操作系统、计算机网络、数据库系统、软件工程、人工智能导论等，平均学分绩点（GPA）达到 3.8/4.0。\n积极参与学院组织的科研项目和技术讲座，拓宽专业视野，提升解决复杂问题的能力。\n荣获校级三好学生荣誉称号，并在 ACM 程序设计竞赛中获得二等奖。\n\n项目经历\n1. 基于深度学习的智能推荐系统 2024-03 - 2024-08\n负责系统架构设计和核心算法实现，基于 Python 与 TensorFlow 构建深度学习模型，实现用户行为预测与商品推荐。\n收集并处理了超过 10 万条用户行为数据，通过特征工程将数据维度提升 20%，有效提升模型训练效率。\n优化推荐算法，使系统推荐准确率提升了 15%，用户点击率提高了 8%，并在期末项目评比中获得 A+。\n撰写项目报告，详细阐述了模型原理、实验过程与结果分析，展示了扎实的理论基础和实践能力。\n\n2. 校园二手交易平台开发 2023-09 - 2024-01\n独立设计并开发了基于 Spring Boot 后端框架和 Vue.js 前端框架的校园二手交易平台。\n实现了用户注册登录、商品发布、浏览搜索、在线聊天、订单管理等核心功能模块。\n采用 MySQL 数据库进行数据存储，并设计了高效的数据库表结构，确保数据访问速度和系统稳定性。\n通过压力测试，系统支持 500+并发用户，并在校内小范围测试中获得师生一致好评，用户反馈积极，日均活跃用户达[XX]人。`,
+        autoSend: true  // 标记需要自动发送
+      },
+      resumeData: defaultResumeData,
+      templateId: 1
+    }
+  });
 
-      <div className="workflow-content">
-        <div className="info-form">
-          <div className="form-group">
-            <label>姓名 <span style={{color: '#f44336'}}>*</span></label>
-            <input
-              type="text"
-              value={userInfo.name}
-              onChange={(e) => setUserInfo({...userInfo, name: e.target.value})}
-              placeholder="请输入您的姓名"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>行业 <span style={{color: '#f44336'}}>*</span></label>
-            <input
-              type="text"
-              value={userInfo.industry}
-              onChange={(e) => setUserInfo({...userInfo, industry: e.target.value})}
-              placeholder="例如: 互联网、金融、教育"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>期望职位 <span style={{color: '#f44336'}}>*</span></label>
-            <input
-              type="text"
-              value={userInfo.targetPosition}
-              onChange={(e) => setUserInfo({...userInfo, targetPosition: e.target.value})}
-              placeholder="例如: 后端开发工程师"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>期望城市</label>
-            <input
-              type="text"
-              value={userInfo.targetCity}
-              onChange={(e) => setUserInfo({...userInfo, targetCity: e.target.value})}
-              placeholder="例如: 北京、上海、深圳"
-            />
-          </div>
-        </div>
-
-        <div className="form-tips">
-          <p>• 示例内容仅作参考,请替换成你的真实公司 / 项目 / 成果</p>
-          <p>• 已有成熟简历? 复制粘贴关键段落即可,AI 会自动梳理结构与措辞</p>
-          <p>• 使用输入法中的语音功能,快速口述录入,稍后再完善关键细节</p>
-        </div>
-
-        <button
-          className="btn-submit"
-          onClick={handleSubmit}
-          disabled={!userInfo.name || !userInfo.industry || !userInfo.targetPosition || isSubmitting}
-        >
-          {isSubmitting ? '提交中...' : '🤖 点击,AI 3 分钟创建简历'}
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }

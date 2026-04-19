@@ -81,71 +81,137 @@
   cursor: not-allowed;
 }
 
-.resume-edit-body {
+/* AI 模式布局 */
+.resume-edit-container.ai-mode .resume-edit-body {
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 60px); /* 减去 header 高度 */
+  height: 100vh; /* 占满整个视口 */
 }
 
-.resume-edit-left {
-  width: 480px;
-  min-width: 480px;
-  border-right: 1px solid var(--border-color);
-  overflow: hidden;
-  background: #f9fafb;
-  display: flex;
-  flex-direction: column;
+/* 拖拽分割线 */
+.resize-handle {
+  width: 4px;
+  background: #e5e7eb;
+  cursor: col-resize;
+  transition: background 0.2s;
+  flex-shrink: 0;
 }
 
-/* AI 模式下的左侧 */
+.resize-handle:hover {
+  background: #2563eb;
+}
+
+/* AI 模式 - 左侧 Chat 区 */
 .resume-edit-container.ai-mode .resume-edit-left {
-  width: 45%;
-  min-width: 400px;
   background: white;
-  border-right: 2px solid var(--border-color);
-}
-
-.resume-edit-placeholder {
+  border-right: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-tertiary);
-  gap: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.placeholder-hint {
+/* 左侧 Chat 区的 header */
+.resume-edit-container.ai-mode .resume-edit-left .ai-chat-panel .chat-header {
+  padding: 16px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.resume-edit-container.ai-mode .resume-edit-left .ai-chat-panel .chat-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.resume-edit-container.ai-mode .resume-edit-left .ai-chat-panel .chat-header p {
   font-size: 13px;
-  color: var(--text-tertiary);
+  color: #6b7280;
+  margin: 0;
 }
 
+/* AI 模式 - 右侧简历预览区 */
+.resume-edit-container.ai-mode .resume-edit-right {
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* 右侧简历区的标题栏 */
+.resume-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.resume-preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resume-preview-header .save-btn {
+  padding: 6px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.resume-preview-header .save-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.resume-preview-header .save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 右侧简历内容区 */
+.resume-preview-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* 右侧简历容器 */
 .resume-edit-right {
   flex: 1;
   overflow-y: auto;
   background: #e5e7eb;
-  min-width: 0; /* 防止内容溢出 */
+  min-width: 0;
 }
 
-/* AI 模式下的右侧 */
-.resume-edit-container.ai-mode .resume-edit-right {
-  width: 55%;
-  background: #f0f0f0;
-}
-
-.resume-edit-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-secondary);
+/* AI 模式下右侧的简历预览容器 */
+.resume-edit-container.ai-mode .resume-edit-right .resume-preview-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 /* AI 模式样式 */
 .resume-edit-container.ai-mode .resume-edit-left {
-  width: 50%;
-  min-width: 50%;
+  width: 40%;
+  min-width: 400px;
   background: white;
 }
 
