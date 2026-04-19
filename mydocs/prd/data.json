@@ -1,0 +1,186 @@
+{
+  "content": {
+    "modules": [
+      {
+        "child": [
+          {
+            "avatar_url": "",
+            "edu": "硕士",
+            "email": "together@offershow.cn",
+            "intro": "Github: https://github.com/xusun000",
+            "major": "计算机科学与技术",
+            "name": "欧非秀1",
+            "phone": "123456789",
+            "political_status": "",
+            "working_age": ""
+          }
+        ],
+        "is_open": true,
+        "modulename": "基础信息",
+        "name": "baseinfo"
+      },
+      {
+        "child": [
+          {
+            "intended_city": "北京",
+            "intended_industry": "互联网",
+            "intended_job": "后端开发工程师",
+            "job_seeking_status": ""
+          }
+        ],
+        "is_open": true,
+        "modulename": "求职意向",
+        "name": "interestabout"
+      },
+      {
+        "child": [
+          {
+            "edu": "硕士",
+            "end_time": "至今",
+            "major": "计算机科学与技术",
+            "school": "北京邮电大学",
+            "school_experience": "",
+            "start_time": "2022.09"
+          },
+          {
+            "edu": "本科",
+            "end_time": "2022.06",
+            "major": "软件工程",
+            "school": "华中科技大学",
+            "school_experience": "",
+            "start_time": "2018.09"
+          }
+        ],
+        "is_open": true,
+        "modulename": "教育背景",
+        "name": "eduabout"
+      },
+      {
+        "child": [
+          {
+            "company": "XX科技有限公司",
+            "department": "",
+            "end_time": "至今",
+            "job_detail": "负责微信支付相关后端服务的设计与开发,优化应用性能,提高处理速度30%以上。<br>主导数据库架构改进项目,实现数据读写分离,提高系统稳定性和可扩展性。主导数据库架构改进项目,实现数据读写分<br>离,提高系统稳定性和可扩展性。<br>使用Docker和Kubernetes实施服务的容器化和微服务架构转型,显著提高了系统的部署效率和可维护性。",
+            "position": "后端开发工程师(实习)",
+            "start_time": "2024.04"
+          },
+          {
+            "company": "杭州XX科技集团",
+            "department": "",
+            "end_time": "2023.08",
+            "job_detail": "开发并维护电商平台的订单管理系统,处理日均超过100万的交易量。<br>实现基于Redis的缓存策略,有效减少了数据库负载和响应时间。<br>编写和维护API文档,与前端团队和产品团队协作,提高项目交付效率和质量。",
+            "position": "后端开发工程师(实习)",
+            "start_time": "2023.03"
+          },
+          {
+            "company": "XX互动娱乐有限公司",
+            "department": "",
+            "end_time": "2022.10",
+            "job_detail": "<p>参与网易云音乐后端开发,负责用户模块的日常维护及新功能开发。<br>使用Python和Flask框架开发RESTful APIs,并与移动应用开发团队协同工作。<br>利用日志分析及监控工具,如ELK(Elasticsearch, Logstash, Kibana)等,监控后端服务状态,及时响应并解决生产环境<br>中的问题。</p>",
+            "position": "后端开发工程师(实习)",
+            "start_time": "2022.06"
+          }
+        ],
+        "is_open": true,
+        "modulename": "工作经历",
+        "name": "workbg"
+      },
+      {
+        "child": [
+          {
+            "end_time": "2024.03",
+            "project_detail": "作为开发人员参与设计和实现一个分布式文件存储系统,用于优化大规模数据的存取效率。该系统基于Go语言开发,使\n用了Raft一致性算法确保集群中数据的一致性。\n实现了自定义的文件分块技术和冗余策略,保障了系统的高可用性和容错能力。\n针对海量数据场景优化了存储布局和读写性能,显著降低了数据热点问题,并提升了系统的整体吞吐量。",
+            "project_role": "开发人员",
+            "project_title": "分布式文件存储系统",
+            "start_time": "2024.01"
+          },
+          {
+            "end_time": "2023.05",
+            "project_detail": "在一个跨部门团队中担任后端开发角色,参与设计和开发一套智能投资顾问系统。\n该系统使用Spring Boot进行后端开发,实现了复杂的业务逻辑和数据分析,方便用户做出更好的投资决策。\n利用机器学习技术分析用户投资行为和市场趋势,提供个性化投资建议,提升了客户满意度和平台的资产管理效率。",
+            "project_role": "后端开发",
+            "project_title": "智能投资顾问系统",
+            "start_time": "2023.03"
+          },
+          {
+            "end_time": "2022.08",
+            "project_detail": "<p>参与开发和部署一款用于中大型企业的企业资源规划系统。</p><p>采用微服务架构设计后端逻辑,确保服务级别和扩展性符合企业级应用需求。</p><p>集成了自动化测试和部署流程,显著降低了上线前的错误率并加快了上线流程。</p>",
+            "project_title": "企业资源规划系统(ERP)",
+            "start_time": "2022.07"
+          }
+        ],
+        "is_open": true,
+        "modulename": "项目经历",
+        "name": "projectabout"
+      },
+      {
+        "child": [
+          {
+            "self_comment": "<p>我是一个对新技术充满热情、具备良好团队合作精神和解决问题能力的后端开发工程师。在过去的工作中,我展现出了卓越的技术领导能力和项目管理能力。我热衷于优化和重构现有的代码库以提升软件效率和可读性,并乐于主动学习以持续提升自身技能。在团队协作中,我擅长与不同背景的同事沟通,并能将复杂的技术问题简化为非技术同事也能理解的概念。我相信,我的这些技能和经验能够为贵公司的项目带来积极的影响。</p>"
+          }
+        ],
+        "is_open": true,
+        "modulename": "自我评价",
+        "name": "self_comment"
+      },
+      {
+        "child": [
+          {
+            "skills": "<p>容器化， Docker， 后端开发， 后端服务， Redis， ELK， Go语言， 微服务架构， Flask， CI/CD， Kubernetes， PostgreSQL， 前端， MySQL， 持续集成， Java， 系统稳定性， Django， 日志分析， 分布式文件， 后端逻辑， Python， 读写分离， Flask框架， Elasticsearch， 算法， 自动化测试， Logstash， Go， 监控工具， 机器学习， 存储系统， 新功能开发， 数据库技术， 移动应用开发， 上线流程， 技术领导， Git， 团队协同， </p>"
+          }
+        ],
+        "is_open": false,
+        "modulename": "专业技能",
+        "name": "skills"
+      },
+      {
+        "child": [
+          {
+            "award_level": "",
+            "award_time": "",
+            "award_title": ""
+          }
+        ],
+        "is_open": false,
+        "modulename": "荣誉奖项",
+        "name": "awardsabout"
+      },
+      {
+        "child": [
+          {
+            "product_img": "",
+            "product_title": "",
+            "product_url": ""
+          }
+        ],
+        "is_open": false,
+        "modulename": "作品集",
+        "name": "productabout"
+      }
+    ]
+  },
+  "css_config": {
+    "global": {
+      "fontColor": "#363636",
+      "fontFamily": "PingFang SC,Microsoft Yahei",
+      "fontSize": 12,
+      "is_english": false,
+      "lineHeight": 1.450241310009058,
+      "moduleDistance": 7,
+      "paddingx": 20,
+      "paddingy": 20,
+      "textDistance": 1,
+      "themeColor": "#001a66",
+      "titleBottom": 1
+    }
+  },
+  "detail_img": "",
+  "module_id": 24,
+  "preview_img": "https://offerzhip.cn/resume_img/168fafa5-0c4a-40e8-bf60-3f24094f1c86.webp",
+  "share_status": 1,
+  "template_id": 18,
+  "title": "后端开发_极简线条_紧凑 (1)",
+  "user_id": 14,
+  "user_uuid": "b95189a8-aaab-45a9-bd2a-04bee7fd83c2",
+  "uuid": "acc6323b-ae0c-48d0-b890-2777f635da43"
+}
