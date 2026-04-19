@@ -1,34 +1,33 @@
-const ResumeHeader = ({ basics }) => {
-  if (!basics) return null;
-
-  // 兼容 url 为对象 {label, href} 或字符串
-  const urlDisplay = basics.url
-    ? (typeof basics.url === 'object' ? (basics.url.href || basics.url.label) : basics.url)
-    : '';
+/**
+ * 简历头部组件 - 对齐新 schema
+ * @param {Object} baseinfoData - baseinfo 模块的 child[0] 数据
+ */
+const ResumeHeader = ({ baseinfoData }) => {
+  if (!baseinfoData) return null;
 
   return (
     <div className="resume-header">
-      {basics.name && <h1 className="resume-header-name">{basics.name}</h1>}
-      {basics.headline && <p className="resume-header-headline">{basics.headline}</p>}
+      {baseinfoData.name && <h1 className="resume-header-name">{baseinfoData.name}</h1>}
+      {baseinfoData.intro && <p className="resume-header-intro">{baseinfoData.intro}</p>}
       <div className="resume-header-contact">
-        {basics.phone && (
+        {baseinfoData.phone && (
           <span className="resume-header-contact-item">
-            📞 {basics.phone}
+            📞 {baseinfoData.phone}
           </span>
         )}
-        {basics.email && (
+        {baseinfoData.email && (
           <span className="resume-header-contact-item">
-            ✉ {basics.email}
+            ✉ {baseinfoData.email}
           </span>
         )}
-        {basics.location && (
+        {baseinfoData.edu && (
           <span className="resume-header-contact-item">
-            📍 {basics.location}
+            🎓 {baseinfoData.edu}
           </span>
         )}
-        {urlDisplay && (
+        {baseinfoData.major && (
           <span className="resume-header-contact-item">
-            🔗 {urlDisplay}
+            📚 {baseinfoData.major}
           </span>
         )}
       </div>

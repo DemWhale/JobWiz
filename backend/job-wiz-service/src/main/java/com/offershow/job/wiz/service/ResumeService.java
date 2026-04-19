@@ -55,14 +55,9 @@ public class ResumeService extends ServiceImpl<ResumeMapper, Resume> {
         if (Objects.isNull(resume)) {
             return null;
         }
-        if (resume.getVisibility() == null) {
-            resume.setVisibility("private");
-        }
-        if (resume.getLocked() == null) {
-            resume.setLocked(false);
-        }
-        if (resume.getSource() == null) {
-            resume.setSource("ORIGINAL");
+        // 设置默认值
+        if (resume.getShareStatus() == null) {
+            resume.setShareStatus(0);
         }
         save(resume);
         return resume;

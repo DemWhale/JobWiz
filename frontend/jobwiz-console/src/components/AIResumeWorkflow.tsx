@@ -6,45 +6,48 @@ import { aguiClient, type AguiCallbacks, type RunFinishedEvent, type TextMessage
 import { resumeApi } from '../services/api';
 import './AIResumeWorkflow.css';
 
-/** 简历数据接口 */
-interface ResumeDraft {
-  basics?: {
-    name?: string;
-    headline?: string;
-    email?: string;
-    phone?: string;
-    location?: string;
+/** 简历数据接口 - 严格对齐 data.json schema */
+export interface ResumeDraft {
+  /** 简历内容模块 */
+  content: {
+    modules: ResumeModule[];
   };
-  sections?: {
-    summary?: { content: string };
-    education?: Array<{
-      institution?: string;
-      area?: string;
-      studyType?: string;
-      date?: string;
-    }>;
-    experience?: Array<{
-      company?: string;
-      position?: string;
-      date?: string;
-      summary?: string;
-    }>;
-    projects?: Array<{
-      name?: string;
-      date?: string;
-      summary?: string;
-    }>;
-    skills?: Array<{
-      name?: string;
-      level?: number;
-      keywords?: string[];
-    }>;
-    certifications?: Array<{
-      name?: string;
-      issuer?: string;
-      date?: string;
-    }>;
+  /** CSS 样式配置 */
+  css_config?: {
+    global?: {
+      fontColor?: string;
+      fontFamily?: string;
+      fontSize?: number;
+      is_english?: boolean;
+      lineHeight?: number;
+      moduleDistance?: number;
+      paddingx?: number;
+      paddingy?: number;
+      textDistance?: number;
+      themeColor?: string;
+      titleBottom?: number;
+    };
   };
+  /** 模板 ID */
+  template_id?: number;
+  /** 简历标题 */
+  title?: string;
+  /** 用户 ID */
+  user_id?: number;
+  /** 分享状态 */
+  share_status?: number;
+}
+
+/** 简历模块 */
+export interface ResumeModule {
+  /** 模块标识 (baseinfo/interestabout/eduabout/workbg/projectabout/self_comment/skills/awardsabout/productabout) */
+  name: string;
+  /** 模块名称 (基础信息/求职意向/教育背景等) */
+  modulename: string;
+  /** 是否展开 */
+  is_open: boolean;
+  /** 模块内容 */
+  child: Array<Record<string, any>>;
 }
 
 /** 用户信息接口 */
@@ -312,7 +315,9 @@ export default function AIResumeWorkflow() {
       const resumeData = {
         userId: 1, // TODO: 从登录态获取
         title: `${userInfo.name}_${userInfo.targetPosition}_${new Date().toLocaleDateString()}`,
-        resumeDetail: JSON.stringify(resumeDraft),
+        // 直接存储 content 和 css_config
+        content: JSON.stringify(resumeDraft.content || resumeDraft),
+        cssConfig: JSON.stringify(resumeDraft.css_config || {}),
         templateId: 1,
         source: 'AI_GENERATED',
         visibility: 'private',
@@ -367,76 +372,96 @@ export default function AIResumeWorkflow() {
   );
 }
 
-/** 简历表单预览组件 */
+/** 简历表单预览组件 - 对齐 data.json schema */
 interface ResumeFormPreviewProps {
   draft: ResumeDraft;
   onChange: (draft: ResumeDraft) => void;
 }
 
 function ResumeFormPreview({ draft, onChange }: ResumeFormPreviewProps) {
-  if (!draft) return <p>暂无数据</p>;
+  if (!draft.content?.modules) return <p>暂无数据</p>;
+
+  // 辅助函数: 查找模块
+  const findModule = (name: string) => 
+    draft.content.modules.find(m => m.name === name);
+
+  // 辅助函数: 更新模块
+  const updateModule = (name: string, child: Array<Record<string, any>>) => {
+    const newModules = draft.content.modules.map(m => 
+      m.name === name ? { ...m, child } : m
+    );
+    onChange({
+      ...draft,
+      content: { modules: newModules }
+    });
+  };
+
+  // 基础信息模块
+  const baseinfo = findModule('baseinfo');
+  const baseinfoData = baseinfo?.child?.[0] || {};
+
+  // 教育背景模块
+  const eduabout = findModule('eduabout');
+
+  // 工作经历模块
+  const workbg = findModule('workbg');
 
   return (
     <div className="resume-form-preview">
-      <div className="form-section">
-        <h4>基本信息</h4>
-        <input
-          type="text"
-          value={draft.basics?.name || ''}
-          onChange={(e) => onChange({
-            ...draft,
-            basics: { ...draft.basics, name: e.target.value }
-          })}
-          placeholder="姓名"
-        />
-        <input
-          type="text"
-          value={draft.basics?.phone || ''}
-          onChange={(e) => onChange({
-            ...draft,
-            basics: { ...draft.basics, phone: e.target.value }
-          })}
-          placeholder="电话"
-        />
-        <input
-          type="text"
-          value={draft.basics?.email || ''}
-          onChange={(e) => onChange({
-            ...draft,
-            basics: { ...draft.basics, email: e.target.value }
-          })}
-          placeholder="邮箱"
-        />
-      </div>
-
-      {draft.sections?.education && draft.sections.education.length > 0 && (
+      {/* 基础信息 */}
+      {baseinfo && (
         <div className="form-section">
-          <h4>教育经历</h4>
-          {draft.sections.education.map((edu, index) => (
+          <h4>{baseinfo.modulename}</h4>
+          <input
+            type="text"
+            value={baseinfoData.name || ''}
+            onChange={(e) => updateModule('baseinfo', [{ ...baseinfoData, name: e.target.value }])}
+            placeholder="姓名"
+          />
+          <input
+            type="text"
+            value={baseinfoData.phone || ''}
+            onChange={(e) => updateModule('baseinfo', [{ ...baseinfoData, phone: e.target.value }])}
+            placeholder="电话"
+          />
+          <input
+            type="text"
+            value={baseinfoData.email || ''}
+            onChange={(e) => updateModule('baseinfo', [{ ...baseinfoData, email: e.target.value }])}
+            placeholder="邮箱"
+          />
+          <input
+            type="text"
+            value={baseinfoData.major || ''}
+            onChange={(e) => updateModule('baseinfo', [{ ...baseinfoData, major: e.target.value }])}
+            placeholder="专业"
+          />
+        </div>
+      )}
+
+      {/* 教育背景 */}
+      {eduabout && eduabout.child.length > 0 && (
+        <div className="form-section">
+          <h4>{eduabout.modulename}</h4>
+          {eduabout.child.map((edu, index) => (
             <div key={index} className="education-item">
               <input
                 type="text"
-                value={edu.institution || ''}
+                value={edu.school || ''}
                 onChange={(e) => {
-                  const newEdu = [...draft.sections!.education!];
-                  newEdu[index] = { ...newEdu[index], institution: e.target.value };
-                  onChange({
-                    ...draft,
-                    sections: { ...draft.sections, education: newEdu }
-                  });
+                  const newChild = [...eduabout.child];
+                  newChild[index] = { ...newChild[index], school: e.target.value };
+                  updateModule('eduabout', newChild);
                 }}
                 placeholder="学校"
               />
               <input
                 type="text"
-                value={edu.area || ''}
+                value={edu.major || ''}
                 onChange={(e) => {
-                  const newEdu = [...draft.sections!.education!];
-                  newEdu[index] = { ...newEdu[index], area: e.target.value };
-                  onChange({
-                    ...draft,
-                    sections: { ...draft.sections, education: newEdu }
-                  });
+                  const newChild = [...eduabout.child];
+                  newChild[index] = { ...newChild[index], major: e.target.value };
+                  updateModule('eduabout', newChild);
                 }}
                 placeholder="专业"
               />
@@ -445,34 +470,29 @@ function ResumeFormPreview({ draft, onChange }: ResumeFormPreviewProps) {
         </div>
       )}
 
-      {draft.sections?.experience && draft.sections.experience.length > 0 && (
+      {/* 工作经历 */}
+      {workbg && workbg.child.length > 0 && (
         <div className="form-section">
-          <h4>工作经历</h4>
-          {draft.sections.experience.map((exp, index) => (
+          <h4>{workbg.modulename}</h4>
+          {workbg.child.map((work, index) => (
             <div key={index} className="experience-item">
               <input
                 type="text"
-                value={exp.company || ''}
+                value={work.company || ''}
                 onChange={(e) => {
-                  const newExp = [...draft.sections!.experience!];
-                  newExp[index] = { ...newExp[index], company: e.target.value };
-                  onChange({
-                    ...draft,
-                    sections: { ...draft.sections, experience: newExp }
-                  });
+                  const newChild = [...workbg.child];
+                  newChild[index] = { ...newChild[index], company: e.target.value };
+                  updateModule('workbg', newChild);
                 }}
                 placeholder="公司"
               />
               <input
                 type="text"
-                value={exp.position || ''}
+                value={work.position || ''}
                 onChange={(e) => {
-                  const newExp = [...draft.sections!.experience!];
-                  newExp[index] = { ...newExp[index], position: e.target.value };
-                  onChange({
-                    ...draft,
-                    sections: { ...draft.sections, experience: newExp }
-                  });
+                  const newChild = [...workbg.child];
+                  newChild[index] = { ...newChild[index], position: e.target.value };
+                  updateModule('workbg', newChild);
                 }}
                 placeholder="职位"
               />
@@ -484,65 +504,93 @@ function ResumeFormPreview({ draft, onChange }: ResumeFormPreviewProps) {
   );
 }
 
-/** 简历视觉预览组件 */
+/** 简历视觉预览组件 - 对齐 data.json schema */
 interface ResumeVisualPreviewProps {
   draft: ResumeDraft | null;
 }
 
 function ResumeVisualPreview({ draft }: ResumeVisualPreviewProps) {
-  if (!draft) return <p>暂无数据</p>;
+  if (!draft?.content?.modules) return <p>暂无数据</p>;
+
+  // 辅助函数: 查找模块
+  const findModule = (name: string) => 
+    draft.content.modules.find(m => m.name === name);
+
+  const baseinfo = findModule('baseinfo');
+  const baseinfoData = baseinfo?.child?.[0] || {};
+  const eduabout = findModule('eduabout');
+  const workbg = findModule('workbg');
+  const selfComment = findModule('self_comment');
+  const skills = findModule('skills');
 
   return (
     <div className="resume-visual-preview">
+      {/* 基础信息 */}
       <div className="resume-header">
-        <h2>{draft.basics?.name || '姓名'}</h2>
-        <p>{draft.basics?.headline || ''}</p>
-        <p>{draft.basics?.phone} | {draft.basics?.email}</p>
+        <h2>{baseinfoData.name || '姓名'}</h2>
+        {baseinfoData.intro && <p>{baseinfoData.intro}</p>}
+        <p>
+          {baseinfoData.phone && <span>{baseinfoData.phone}</span>}
+          {baseinfoData.phone && baseinfoData.email && <span> | </span>}
+          {baseinfoData.email && <span>{baseinfoData.email}</span>}
+        </p>
       </div>
 
-      {draft.sections?.summary && (
+      {/* 自我评价 */}
+      {selfComment && selfComment.child.length > 0 && selfComment.child[0].self_comment && (
         <div className="resume-section">
-          <h3>个人总结</h3>
-          <p>{draft.sections.summary.content}</p>
+          <h3>{selfComment.modulename}</h3>
+          <div dangerouslySetInnerHTML={{ __html: selfComment.child[0].self_comment }} />
         </div>
       )}
 
-      {draft.sections?.education && draft.sections.education.length > 0 && (
+      {/* 教育背景 */}
+      {eduabout && eduabout.child.length > 0 && (
         <div className="resume-section">
-          <h3>教育经历</h3>
-          {draft.sections.education.map((edu, index) => (
+          <h3>{eduabout.modulename}</h3>
+          {eduabout.child.map((edu, index) => (
             <div key={index} className="resume-item">
-              <h4>{edu.institution} - {edu.area} ({edu.studyType})</h4>
-              <p>{edu.date}</p>
+              <h4>{edu.school} - {edu.major} ({edu.edu})</h4>
+              <p>{edu.start_time} ~ {edu.end_time}</p>
+              {edu.school_experience && <div dangerouslySetInnerHTML={{ __html: edu.school_experience }} />}
             </div>
           ))}
         </div>
       )}
 
-      {draft.sections?.experience && draft.sections.experience.length > 0 && (
+      {/* 工作经历 */}
+      {workbg && workbg.child.length > 0 && (
         <div className="resume-section">
-          <h3>工作经历</h3>
-          {draft.sections.experience.map((exp, index) => (
+          <h3>{workbg.modulename}</h3>
+          {workbg.child.map((work, index) => (
             <div key={index} className="resume-item">
-              <h4>{exp.company} - {exp.position}</h4>
-              <p>{exp.date}</p>
-              <p>{exp.summary}</p>
+              <h4>{work.company} - {work.position}</h4>
+              <p>{work.start_time} ~ {work.end_time}</p>
+              {work.job_detail && <div dangerouslySetInnerHTML={{ __html: work.job_detail }} />}
             </div>
           ))}
         </div>
       )}
 
-      {draft.sections?.skills && draft.sections.skills.length > 0 && (
-        <div className="resume-section">
-          <h3>技能</h3>
-          <div className="skills-list">
-            {draft.sections.skills.map((skill, index) => (
-              <span key={index} className="skill-tag">
-                {skill.name}
-                {skill.keywords && skill.keywords.length > 0 && ` (${skill.keywords.join(', ')})`}
-              </span>
-            ))}
+      {/* 项目经历 */}
+      {findModule('projectabout')?.child.map((project, index) => (
+        project.project_title && (
+          <div className="resume-section" key={index}>
+            <h3>{findModule('projectabout')!.modulename}</h3>
+            <div className="resume-item">
+              <h4>{project.project_title} ({project.project_role})</h4>
+              <p>{project.start_time} ~ {project.end_time}</p>
+              {project.project_detail && <div dangerouslySetInnerHTML={{ __html: project.project_detail }} />}
+            </div>
           </div>
+        )
+      ))}
+
+      {/* 专业技能 */}
+      {skills && skills.child.length > 0 && skills.child[0].skills && (
+        <div className="resume-section">
+          <h3>{skills.modulename}</h3>
+          <div dangerouslySetInnerHTML={{ __html: skills.child[0].skills }} />
         </div>
       )}
     </div>

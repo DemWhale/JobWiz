@@ -55,14 +55,19 @@ const ResumeEdit = ({ userId }) => {
       const data = await resumeApi.getById(id);
       setResume(data);
 
-      // 解析简历数据
-      let parsed = { basics: {}, sections: {} };
-      if (data?.resumeDetail) {
-        try {
-          parsed = JSON.parse(data.resumeDetail);
-        } catch (e) {
-          console.error('解析简历数据失败:', e);
-        }
+      // 解析简历数据 (新 schema)
+      // 后端字段直接对应 data.json 顶层结构
+      let parsed = { content: { modules: [] }, css_config: {} };
+      if (data) {
+        parsed = {
+          content: data.content ? (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : { modules: [] },
+          css_config: data.cssConfig ? (typeof data.cssConfig === 'string' ? JSON.parse(data.cssConfig) : data.cssConfig) : {},
+          template_id: data.templateId,
+          title: data.title,
+          user_id: data.userId,
+          uuid: data.uuid,
+          share_status: data.shareStatus
+        };
       }
       setResumeData(parsed);
 
@@ -107,7 +112,9 @@ const ResumeEdit = ({ userId }) => {
       try {
         await resumeApi.update({
           id: Number(effectiveId),
-          resumeDetail: JSON.stringify(data),
+          // 直接存储 content 和 css_config
+          content: JSON.stringify(data.content || data),
+          cssConfig: JSON.stringify(data.css_config || {}),
         });
         setSaveStatus('saved');
         // 2秒后清除保存状态
@@ -138,7 +145,9 @@ const ResumeEdit = ({ userId }) => {
           userId: Number(userId),
           templateId: state.templateId || null,
           title: '未命名简历',
-          resumeDetail: JSON.stringify(resumeData),
+          // 直接存储 content 和 css_config
+          content: JSON.stringify(resumeData.content || resumeData),
+          cssConfig: JSON.stringify(resumeData.css_config || {}),
         });
         setSavedResumeId(created.id);
         setResume(created);
@@ -149,7 +158,9 @@ const ResumeEdit = ({ userId }) => {
         // 已有 ID，直接 update
         await resumeApi.update({
           id: Number(effectiveId),
-          resumeDetail: JSON.stringify(resumeData),
+          // 直接存储 content 和 css_config
+          content: JSON.stringify(resumeData.content || resumeData),
+          cssConfig: JSON.stringify(resumeData.css_config || {}),
         });
         setSaveStatus('saved');
       }
