@@ -5,6 +5,7 @@ import Profile from './pages/Profile';
 import ResumeList from './pages/ResumeList';
 import ResumeEdit from './pages/ResumeEdit';
 import Home from './pages/Home';
+import AIResumeWorkflow from './components/AIResumeWorkflow';
 import Sidebar from './components/Sidebar';
 import { userFeatureApi } from './services/api';
 import './App.css';
@@ -165,6 +166,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Home userId={userId} userFeature={userFeature} />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/resume/ai-create" 
+        element={
+          <ProtectedRoute>
+            <AIResumeWorkflow userId={userId} />
           </ProtectedRoute>
         } 
       />

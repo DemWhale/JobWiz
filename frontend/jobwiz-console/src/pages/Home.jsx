@@ -8,7 +8,8 @@ const Home = ({ userId, userFeature }) => {
 
   const handleCardClick = (cardType) => {
     if (cardType === 'create-resume') {
-      navigate('/resumes');
+      // 跳转到 AI 创建简历工作流
+      navigate('/resume/ai-create');
       return;
     }
     console.log('Card clicked:', cardType);
