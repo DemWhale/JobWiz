@@ -120,6 +120,10 @@
   line-height: 1.5;
 }
 
+.form-textarea-compact {
+  min-height: 88px;
+}
+
 /* 熟练度滑块 */
 .form-field input[type="range"] {
   padding: 0;

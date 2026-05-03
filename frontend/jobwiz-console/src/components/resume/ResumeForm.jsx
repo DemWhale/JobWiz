@@ -1,11 +1,32 @@
-import { useState, useCallback, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
 import FormToolbar from './FormToolbar';
 import SectionFormItem from './SectionFormItem';
 import './ResumeForm.css';
 
+const MODULE_LABELS = {
+  baseinfo: '基本信息',
+  self_comment: '自我评价',
+  eduabout: '教育背景',
+  workbg: '工作经历',
+  projectabout: '项目经历',
+  skills: '专业技能',
+};
+
+const getProfileLink = (baseinfo = {}) => {
+  const direct = baseinfo.github || baseinfo.url || '';
+  if (direct) return direct;
+
+  const intro = (baseinfo.intro || '').trim();
+  if (!intro) return '';
+  if (intro.startsWith('http') || intro.includes('github.com')) {
+    return intro.replace(/^github:\s*/i, '').trim();
+  }
+  return '';
+};
+
 const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
-  const [modules, setModules] = useState(resumeData?.content?.modules || []);
   const formRef = useRef(null);
+  const modules = resumeData?.content?.modules || [];
 
   // 暴露 scrollToSection 方法给父组件
   useImperativeHandle(ref, () => ({
@@ -24,35 +45,46 @@ const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
     },
   }));
 
-  // 同步外部 resumeData 变化（如从后端加载预填充数据）
-  useEffect(() => {
-    if (resumeData?.content?.modules) {
-      setModules(resumeData.content.modules);
-    }
-  }, [resumeData]);
-
   // 查找模块
   const findModule = useCallback((name) => {
     return modules.find(m => m.name === name) || { name, modulename: '', is_open: true, child: [] };
   }, [modules]);
 
-  // 更新模块的 child 数据
+  const createModule = useCallback((name, child = []) => ({
+    name,
+    modulename: MODULE_LABELS[name] || name,
+    is_open: true,
+    child,
+  }), []);
+
+  // 更新模块的 child 数据，并保留 resumeData 顶层字段与 content 其他字段
   const updateModule = useCallback((name, child) => {
-    const newModules = modules.map(m => 
-      m.name === name ? { ...m, child } : m
-    );
-    setModules(newModules);
-    onChange({ content: { modules: newModules } });
-  }, [modules, onChange]);
+    const exists = modules.some(m => m.name === name);
+    const newModules = exists
+      ? modules.map(m => m.name === name ? { ...m, child, is_open: m.is_open !== false } : m)
+      : [...modules, createModule(name, child)];
+
+    onChange({
+      ...resumeData,
+      content: {
+        ...(resumeData?.content || {}),
+        modules: newModules,
+      },
+    });
+  }, [createModule, modules, onChange, resumeData]);
+
+  const updateBaseinfoFields = useCallback((fields) => {
+    const baseinfo = findModule('baseinfo');
+    const newChild = baseinfo.child.length > 0
+      ? [{ ...baseinfo.child[0], ...fields }]
+      : [{ ...fields }];
+    updateModule('baseinfo', newChild);
+  }, [findModule, updateModule]);
 
   // 更新基础信息单个字段
   const updateBaseinfo = useCallback((field, value) => {
-    const baseinfo = findModule('baseinfo');
-    const newChild = baseinfo.child.length > 0 
-      ? [{ ...baseinfo.child[0], [field]: value }]
-      : [{ [field]: value }];
-    updateModule('baseinfo', newChild);
-  }, [findModule, updateModule]);
+    updateBaseinfoFields({ [field]: value });
+  }, [updateBaseinfoFields]);
 
   // 更新自我评价
   const updateSelfComment = useCallback((htmlContent) => {
@@ -87,6 +119,7 @@ const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
 
   // 获取安全的数据
   const baseinfo = findModule('baseinfo').child[0] || {};
+  const profileLink = getProfileLink(baseinfo);
   const selfComment = findModule('self_comment').child[0]?.self_comment || '';
   const eduabout = findModule('eduabout').child;
   const workbg = findModule('workbg').child;
@@ -150,15 +183,36 @@ const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
               placeholder="请输入专业"
             />
           </div>
+          <div className="form-field">
+            <label>学历</label>
+            <input
+              type="text"
+              value={baseinfo.edu || ''}
+              onChange={(e) => updateBaseinfo('edu', e.target.value)}
+              placeholder="例如：硕士"
+            />
+          </div>
+          <div className="form-field">
+            <label>主页链接</label>
+            <input
+              type="text"
+              value={profileLink}
+              onChange={(e) => updateBaseinfoFields({
+                github: e.target.value,
+                url: e.target.value,
+              })}
+              placeholder="例如：https://github.com/yourname"
+            />
+          </div>
         </div>
 
         <div className="form-field">
           <label>个人简介</label>
-          <input
-            type="text"
+          <textarea
+            className="form-textarea form-textarea-compact"
             value={baseinfo.intro || ''}
             onChange={(e) => updateBaseinfo('intro', e.target.value)}
-            placeholder="例如：数据分析师"
+            placeholder="补充一句个人简介或头部说明"
           />
         </div>
       </SectionFormItem>

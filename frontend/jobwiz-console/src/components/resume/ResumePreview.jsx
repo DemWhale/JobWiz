@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ResumeHeader from './ResumeHeader';
 import ResumeSectionWrapper from './ResumeSectionWrapper';
 import ResumeSummary from './ResumeSummary';
@@ -31,6 +31,18 @@ const MODULE_COMPONENTS = {
   awardsabout: ResumeCertifications,
 };
 
+const ZOOM_OPTIONS = [
+  { label: '适应', value: 'fit' },
+  { label: '80%', value: 0.8 },
+  { label: '100%', value: 1 },
+  { label: '120%', value: 1.2 },
+];
+
+const DEFAULT_PAPER_SIZE = {
+  width: 794,
+  height: 1123,
+};
+
 /**
  * 简历预览组件 - 对齐新 schema
  * @param {Object} resumeData - { content: { modules: [] }, css_config: {} }
@@ -38,6 +50,12 @@ const MODULE_COMPONENTS = {
  * @param {Function} onSectionClick - 模块点击回调
  */
 const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
+  const containerRef = useRef(null);
+  const paperRef = useRef(null);
+  const [zoomMode, setZoomMode] = useState('fit');
+  const [fitScale, setFitScale] = useState(1);
+  const [paperSize, setPaperSize] = useState(DEFAULT_PAPER_SIZE);
+
   // 查找模块
   const findModule = (name) => {
     return resumeData?.content?.modules?.find(m => m.name === name);
@@ -66,6 +84,50 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
     if (!resumeData?.content?.modules) return [];
     return resumeData.content.modules.filter(m => m.is_open !== false);
   }, [resumeData]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const paper = paperRef.current;
+    if (!container || !paper) return;
+
+    const updateScale = () => {
+      const nextPaperSize = {
+        width: paper.offsetWidth,
+        height: paper.offsetHeight,
+      };
+      setPaperSize((prev) => (
+        prev.width === nextPaperSize.width && prev.height === nextPaperSize.height
+          ? prev
+          : nextPaperSize
+      ));
+
+      if (zoomMode !== 'fit') return;
+
+      const availableWidth = Math.max(container.clientWidth - 48, 320);
+      const availableHeight = Math.max(container.clientHeight - 48, 320);
+      const widthScale = availableWidth / nextPaperSize.width;
+      const heightScale = availableHeight / nextPaperSize.height;
+      const nextScale = Math.min(widthScale, heightScale, 1);
+      setFitScale(Number.isFinite(nextScale) ? Math.max(nextScale, 0.35) : 1);
+    };
+
+    updateScale();
+
+    const observer = new ResizeObserver(() => {
+      updateScale();
+    });
+
+    observer.observe(container);
+    observer.observe(paper);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [resumeData, templateMeta, zoomMode]);
+
+  const scale = zoomMode === 'fit' ? fitScale : zoomMode;
+  const scaledWidth = paperSize.width ? paperSize.width * scale : undefined;
+  const scaledHeight = paperSize.height ? paperSize.height * scale : undefined;
 
   // 渲染单个模块
   const renderModule = (module) => {
@@ -119,14 +181,49 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
 
   return (
     <div className="resume-preview-container">
-      <div className="resume-preview-a4">
-        <div className="resume-render resume-a4" style={cssVars}>
-          {/* Header */}
-          <ResumeHeader baseinfoData={baseinfoData} />
+      <div className="resume-preview-toolbar">
+        <div className="resume-preview-toolbar-label">预览缩放</div>
+        <div className="resume-preview-zoom-group">
+          {ZOOM_OPTIONS.map((option) => {
+            const active = zoomMode === option.value;
+            return (
+              <button
+                key={String(option.value)}
+                type="button"
+                className={`resume-preview-zoom-btn ${active ? 'active' : ''}`}
+                onClick={() => setZoomMode(option.value)}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="resume-preview-zoom-indicator">
+          {`${Math.round(scale * 100)}%`}
+        </div>
+      </div>
 
-          {/* 单栏布局 (新 schema 不区分主侧栏) */}
-          <div className="resume-single-column">
-            {visibleModules.map(renderModule)}
+      <div className="resume-preview-stage" ref={containerRef}>
+        <div
+          className="resume-preview-canvas"
+          style={{
+            width: scaledWidth,
+            height: scaledHeight,
+          }}
+        >
+          <div
+            className="resume-preview-a4"
+            style={{
+              transform: `scale(${scale})`,
+            }}
+          >
+            <div className="resume-render resume-a4" ref={paperRef} style={cssVars}>
+              <ResumeHeader baseinfoData={baseinfoData} />
+
+              <div className="resume-single-column">
+                {visibleModules.map(renderModule)}
+              </div>
+            </div>
           </div>
         </div>
       </div>

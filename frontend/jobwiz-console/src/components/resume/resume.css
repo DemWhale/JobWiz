@@ -103,10 +103,17 @@
   margin: 0 0 4px 0;
 }
 
+.resume-header-link,
 .resume-header-headline {
   font-size: 14px;
   color: var(--resume-theme-primary);
   font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.resume-header-intro {
+  font-size: 13px;
+  color: #475569;
   margin: 0 0 8px 0;
 }
 
@@ -165,6 +172,12 @@
   font-size: 12px;
   color: #444;
   line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.resume-rich-text,
+.resume-skills-html {
+  white-space: pre-wrap;
 }
 
 /* 技能进度条 */

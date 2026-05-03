@@ -322,20 +322,24 @@ const ResumeEdit = ({ userId }) => {
           /* 普通模式: 左侧表单 + 右侧预览 */
           <>
             <div className="resume-edit-left">
-              {resumeData && (
-                <ResumeForm
-                  ref={formRef}
-                  resumeData={resumeData}
-                  onChange={handleFormChange}
-                />
-              )}
+              <div className="resume-workspace-panel resume-form-panel">
+                {resumeData && (
+                  <ResumeForm
+                    ref={formRef}
+                    resumeData={resumeData}
+                    onChange={handleFormChange}
+                  />
+                )}
+              </div>
             </div>
             <div className="resume-edit-right">
-              <ResumePreview
-                resumeData={resumeData}
-                templateMeta={templateMeta}
-                onSectionClick={handleSectionClick}
-              />
+              <div className="resume-workspace-panel resume-preview-panel">
+                <ResumePreview
+                  resumeData={resumeData}
+                  templateMeta={templateMeta}
+                  onSectionClick={handleSectionClick}
+                />
+              </div>
             </div>
           </>
         )}

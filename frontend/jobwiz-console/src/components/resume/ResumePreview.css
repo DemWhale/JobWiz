@@ -1,17 +1,90 @@
 .resume-preview-container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px;
-  background: #e5e7eb;
-  min-height: 100%;
-  overflow-y: auto;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.resume-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  flex-shrink: 0;
+}
+
+.resume-preview-toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.resume-preview-zoom-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resume-preview-zoom-btn {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resume-preview-zoom-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.resume-preview-zoom-indicator {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.resume-preview-stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px 28px 40px;
+  background: #e2e8f0;
+  box-sizing: border-box;
+}
+
+.resume-preview-canvas {
+  margin: 0 auto;
+  position: relative;
 }
 
 .resume-preview-a4 {
-  width: 210mm;
-  min-height: 297mm;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  position: relative;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: top left;
+}
+
+@media (max-width: 960px) {
+  .resume-preview-toolbar {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  .resume-preview-zoom-indicator {
+    margin-left: 0;
+  }
+
+  .resume-preview-stage {
+    padding: 20px 16px 28px;
+  }
 }

@@ -3,21 +3,26 @@ const ResumeProjects = ({ items }) => {
 
   return (
     <div className="resume-timeline">
-      {items.map((item) => {
+      {items.map((item, index) => {
         if (!item.visible && item.visible !== undefined) return null;
+        const title = item.project_title || item.name;
+        const role = item.project_role || item.description;
+        const date = item.date || [item.start_time, item.end_time].filter(Boolean).join(' ~ ');
+        const detail = item.project_detail || item.summary;
+
         return (
-          <div key={item.id} className="resume-timeline-item">
+          <div key={item.id || index} className="resume-timeline-item">
             <div className="resume-timeline-header">
-              <span className="resume-timeline-title">{item.name}</span>
-              <span className="resume-timeline-date">{item.date}</span>
+              <span className="resume-timeline-title">{title}</span>
+              <span className="resume-timeline-date">{date}</span>
             </div>
-            {item.description && (
-              <div className="resume-timeline-subtitle">{item.description}</div>
+            {role && (
+              <div className="resume-timeline-subtitle">{role}</div>
             )}
-            {item.summary && (
+            {detail && (
               <div
                 className="resume-timeline-detail"
-                dangerouslySetInnerHTML={{ __html: item.summary }}
+                dangerouslySetInnerHTML={{ __html: detail }}
               />
             )}
             {item.keywords && item.keywords.length > 0 && (
