@@ -38,6 +38,9 @@ const ZOOM_OPTIONS = [
   { label: '120%', value: 1.2 },
 ];
 
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 1.4;
+
 const DEFAULT_PAPER_SIZE = {
   width: 794,
   height: 1123,
@@ -49,11 +52,12 @@ const DEFAULT_PAPER_SIZE = {
  * @param {Object} templateMeta - 模板元数据 (可选,向后兼容)
  * @param {Function} onSectionClick - 模块点击回调
  */
-const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
+const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSectionId }) => {
   const containerRef = useRef(null);
   const paperRef = useRef(null);
   const [zoomMode, setZoomMode] = useState('fit');
   const [fitScale, setFitScale] = useState(1);
+  const [manualScale, setManualScale] = useState(1);
   const [paperSize, setPaperSize] = useState(DEFAULT_PAPER_SIZE);
 
   // 查找模块
@@ -125,9 +129,10 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
     };
   }, [resumeData, templateMeta, zoomMode]);
 
-  const scale = zoomMode === 'fit' ? fitScale : zoomMode;
+  const scale = zoomMode === 'fit' ? fitScale : manualScale;
   const scaledWidth = paperSize.width ? paperSize.width * scale : undefined;
   const scaledHeight = paperSize.height ? paperSize.height * scale : undefined;
+  const sliderValue = Math.round((zoomMode === 'fit' ? fitScale : manualScale) * 100);
 
   // 渲染单个模块
   const renderModule = (module) => {
@@ -168,6 +173,7 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
         sectionId={module.name}
         name={moduleName}
         visible={module.is_open !== false}
+        active={activeSectionId === module.name}
         onAnchorClick={onSectionClick}
       >
         <Component {...props} />
@@ -185,18 +191,42 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick }) => {
         <div className="resume-preview-toolbar-label">预览缩放</div>
         <div className="resume-preview-zoom-group">
           {ZOOM_OPTIONS.map((option) => {
-            const active = zoomMode === option.value;
+            const active = option.value === 'fit'
+              ? zoomMode === 'fit'
+              : zoomMode !== 'fit' && Math.abs(manualScale - option.value) < 0.001;
             return (
               <button
                 key={String(option.value)}
                 type="button"
                 className={`resume-preview-zoom-btn ${active ? 'active' : ''}`}
-                onClick={() => setZoomMode(option.value)}
+                onClick={() => {
+                  if (option.value === 'fit') {
+                    setZoomMode('fit');
+                    return;
+                  }
+                  setManualScale(option.value);
+                  setZoomMode('manual');
+                }}
               >
                 {option.label}
               </button>
             );
           })}
+        </div>
+        <div className="resume-preview-slider-group">
+          <input
+            className="resume-preview-slider"
+            type="range"
+            min={Math.round(MIN_ZOOM * 100)}
+            max={Math.round(MAX_ZOOM * 100)}
+            step="1"
+            value={sliderValue}
+            onChange={(e) => {
+              setManualScale(Number(e.target.value) / 100);
+              setZoomMode('manual');
+            }}
+            aria-label="预览缩放百分比"
+          />
         </div>
         <div className="resume-preview-zoom-indicator">
           {`${Math.round(scale * 100)}%`}

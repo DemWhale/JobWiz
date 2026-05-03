@@ -130,6 +130,7 @@ export interface CustomEvent extends BaseAguiEvent {
   type: 'CustomEvent';
   name: string;
   data?: unknown;
+  value?: unknown;
 }
 
 /** 所有 AGUI 事件的联合类型 */
@@ -414,7 +415,17 @@ export class AguiClient {
 
       // Special events
       case 'RAW':
-        // RAW 事件(目前不需要处理)
+        if ((event as BaseAguiEvent).rawEvent && typeof (event as BaseAguiEvent).rawEvent === 'object') {
+          const rawPayload = (event as BaseAguiEvent).rawEvent as Record<string, unknown>;
+          const errorMessage = rawPayload.error;
+          if (typeof errorMessage === 'string') {
+            callbacks.onRunError?.({
+              type: 'RunError',
+              message: errorMessage,
+              code: 'RAW_ERROR'
+            });
+          }
+        }
         break;
 
       case 'CUSTOM':

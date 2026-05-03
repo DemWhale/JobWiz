@@ -3,7 +3,7 @@ import ChatWindow from '../components/ChatWindow';
 import InputArea from '../components/InputArea';
 import './Home.css';
 
-const Home = ({ userId, userFeature }) => {
+const Home = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (cardType) => {

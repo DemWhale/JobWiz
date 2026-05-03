@@ -1,8 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { aguiClient, type AguiCallbacks, type TextMessageContentEvent } from '../../services/agui';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  aguiClient,
+  type AguiCallbacks,
+  type CustomEvent,
+  type StateDeltaEvent,
+  type StateSnapshotEvent,
+  type TextMessageContentEvent,
+} from '../../services/agui';
 import './AIChatPanel.css';
 
-/** 消息接口 */
 interface Message {
   id: string;
   role: 'user' | 'assistant' | 'error' | 'system';
@@ -10,10 +16,16 @@ interface Message {
   streaming?: boolean;
 }
 
-/** ResumeData 类型 */
+interface ResumeModule {
+  name: string;
+  modulename?: string;
+  child?: any[];
+  is_open?: boolean;
+}
+
 interface ResumeData {
   content: {
-    modules: any[];
+    modules: ResumeModule[];
   };
   css_config?: any;
   template_id?: number;
@@ -23,277 +35,488 @@ interface ResumeData {
   [key: string]: any;
 }
 
-/** Props 接口 */
+interface EditTarget {
+  section: string;
+  itemIndex?: number;
+}
+
+interface ResumePatchOperation {
+  op: 'replace';
+  path: string;
+  value: unknown;
+}
+
+interface ResumePatch {
+  type: 'resume_patch';
+  target?: EditTarget;
+  summary?: string;
+  previewText?: string;
+  needsConfirmation?: boolean;
+  operations?: ResumePatchOperation[];
+  previousResume?: ResumeData;
+}
+
 interface AIChatPanelProps {
-  /** 初始用户信息(来自表单) */
   userInfo?: {
     name: string;
     industry: string;
     targetPosition: string;
     targetCity: string;
-    prefillMessage?: string;  // 预填信息
-    autoSend?: boolean;       // 是否自动发送
+    prefillMessage?: string;
+    autoSend?: boolean;
   };
-  /** 当前简历数据 */
   resumeData: ResumeData | null;
-  /** 更新简历数据的回调 */
+  persistedResume?: ResumeData | null;
+  pendingPatch?: ResumePatch | null;
+  activeTarget?: EditTarget | null;
+  saveStatus?: 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'draft';
+  onPendingPatchChange?: (patch: ResumePatch | null) => void;
+  onActiveTargetChange?: (target: EditTarget | null) => void;
+  onChangeHistory?: (updater: (prev: ResumePatch[]) => ResumePatch[]) => void;
   onUpdateResumeData: (data: ResumeData) => void;
 }
 
-/**
- * AI 聊天面板组件
- * 
- * 功能:
- * - 用户发送消息
- * - 调用 AGUI Agent (polish)
- * - 流式接收 AI 回复
- * - 解析 JSON 并更新 resumeData
- */
-export default function AIChatPanel({ userInfo, resumeData, onUpdateResumeData }: AIChatPanelProps) {
+const QUICK_ACTIONS = [
+  '润色当前内容',
+  '更像目标岗位',
+  '压缩为更简洁版本',
+  '补充量化成果',
+];
+
+const SECTION_LABELS: Record<string, string> = {
+  baseinfo: '基本信息',
+  self_comment: '自我评价',
+  eduabout: '教育背景',
+  workbg: '工作经历',
+  projectabout: '项目经历',
+  skills: '专业技能',
+  awardsabout: '荣誉奖项',
+  interestabout: '求职意向',
+};
+
+const cloneResume = (resume: ResumeData) => JSON.parse(JSON.stringify(resume)) as ResumeData;
+
+const formatTargetLabel = (target?: EditTarget | null) => {
+  if (!target?.section) return '整份简历';
+  const sectionLabel = SECTION_LABELS[target.section] || target.section;
+  if (typeof target.itemIndex === 'number') {
+    return `${sectionLabel} / 第 ${target.itemIndex + 1} 条`;
+  }
+  return sectionLabel;
+};
+
+const parsePatchFromContent = (content: string): ResumePatch | null => {
+  const jsonBlock = content.match(/```json\s*([\s\S]*?)```/i)?.[1];
+  const fallbackBlock = content.match(/(\{[\s\S]*"type"\s*:\s*"resume_patch"[\s\S]*\})/i)?.[1];
+  const candidate = jsonBlock || fallbackBlock;
+
+  if (!candidate) return null;
+
+  try {
+    const parsed = JSON.parse(candidate);
+    if (parsed?.type === 'resume_patch') {
+      return parsed as ResumePatch;
+    }
+    return null;
+  } catch (error) {
+    console.warn('解析 resume_patch 失败:', error);
+    return null;
+  }
+};
+
+const applyPatchToResume = (resume: ResumeData, patch: ResumePatch): ResumeData | null => {
+  if (!resume || !patch.operations?.length) return null;
+
+  const nextResume = cloneResume(resume);
+
+  for (const operation of patch.operations) {
+    if (operation.op !== 'replace') continue;
+
+    const match = operation.path.match(/^content\.modules\[name=([^\]]+)\]\.child\[(\d+)\]\.([a-zA-Z0-9_]+)$/);
+    if (!match) return null;
+
+    const [, sectionName, rawIndex, field] = match;
+    const itemIndex = Number(rawIndex);
+    const module = nextResume.content?.modules?.find((item) => item.name === sectionName);
+    if (!module) return null;
+
+    if (!Array.isArray(module.child)) {
+      module.child = [];
+    }
+
+    while (module.child.length <= itemIndex) {
+      module.child.push({});
+    }
+
+    module.child[itemIndex] = {
+      ...(module.child[itemIndex] || {}),
+      [field]: operation.value,
+    };
+  }
+
+  return nextResume;
+};
+
+const normalizePatch = (payload: unknown): ResumePatch | null => {
+  if (!payload || typeof payload !== 'object') return null;
+  const candidate = payload as Record<string, unknown>;
+  if (candidate.type === 'resume_patch') {
+    return candidate as ResumePatch;
+  }
+  if (candidate.patch && typeof candidate.patch === 'object') {
+    const patch = candidate.patch as Record<string, unknown>;
+    if (patch.type === 'resume_patch') {
+      return patch as ResumePatch;
+    }
+  }
+  return null;
+};
+
+export default function AIChatPanel({
+  userInfo,
+  resumeData,
+  persistedResume,
+  pendingPatch,
+  activeTarget,
+  saveStatus = 'idle',
+  onPendingPatchChange,
+  onActiveTargetChange,
+  onChangeHistory,
+  onUpdateResumeData,
+}: AIChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 自动滚动到底部
+  const saveStatusText = {
+    idle: '等待编辑',
+    dirty: '草稿未保存',
+    saving: '保存中...',
+    saved: '已保存',
+    error: '保存失败',
+    draft: '草稿模式',
+  }[saveStatus];
+
+  const sectionOptions = useMemo(() => {
+    return (resumeData?.content?.modules || [])
+      .filter((module) => SECTION_LABELS[module.name])
+      .map((module) => ({
+        section: module.name,
+        label: SECTION_LABELS[module.name] || module.modulename || module.name,
+      }));
+  }, [resumeData]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, pendingPatch]);
 
-  // 首次加载时显示欢迎消息
   useEffect(() => {
-    if (messages.length === 0) {
-      let welcomeContent = '您好！我是您的 AI 简历助手。\n\n';
-      
-      if (userInfo) {
-        welcomeContent += `已收到您的基本信息：\n`;
-        welcomeContent += `• 姓名：${userInfo.name}\n`;
-        welcomeContent += `• 行业：${userInfo.industry}\n`;
-        welcomeContent += `• 期望职位：${userInfo.targetPosition}\n`;
-        if (userInfo.targetCity) {
-          welcomeContent += `• 期望城市：${userInfo.targetCity}\n`;
-        }
-        welcomeContent += `\n请告诉我您的具体需求，例如：\n`;
-        welcomeContent += `• 帮我生成工作经历描述\n`;
-        welcomeContent += `• 优化教育背景部分\n`;
-        welcomeContent += `• 添加项目经验\n`;
-        welcomeContent += `• 调整技能列表`;
-      } else {
-        welcomeContent += '请告诉我您的求职意向和工作经历，我将帮您创建一份专业简历。';
-      }
-      
-      const welcomeMsg: Message = {
-        id: 'welcome',
-        role: 'assistant',
-        content: welcomeContent
-      };
-      setMessages([welcomeMsg]);
+    if (messages.length > 0) return;
 
-      // 如果有预填信息,自动填充到 input
-      if (userInfo?.prefillMessage) {
-        setInput(userInfo.prefillMessage);
-        
-        // 如果需要自动发送,延迟 500ms 后自动发送
-        if (userInfo.autoSend) {
-          // 直接使用 input 值发送,不依赖 handleSend
-          setTimeout(() => {
-            const prefillContent = userInfo.prefillMessage;
-            if (!prefillContent || isStreaming) return;
+    let welcomeContent = '您好！我是您的 AI 简历编辑助手。\n\n';
+    welcomeContent += '我可以帮您按模块润色、改写、压缩或补充量化表达。\n';
+    welcomeContent += '建议先点右侧某个模块，锁定“当前编辑目标”，再发出修改要求。';
 
-            const userMessage: Message = {
-              id: `msg_${Date.now()}`,
-              role: 'user',
-              content: prefillContent
-            };
-            setMessages(prev => [...prev, userMessage]);
-            setInput('');
-            setIsStreaming(true);
-
-            const messageId = `assistant_msg_${Date.now()}`;
-            setMessages(prev => [...prev, {
-              id: messageId,
-              role: 'assistant',
-              content: '',
-              streaming: true
-            }]);
-
-            // 调用 AGUI
-            aguiClient.connect({
-              agentId: 'default',
-              message: prefillContent,
-              forwardedProps: {
-                userId: '1',
-                currentStep: 'polish',
-                resumeDraft: resumeData
-              },
-              callbacks: {
-                onRunStarted: (event) => {
-                  console.log('[AGUI] Run started:', event.threadId);
-                  setThreadId(event.threadId);
-                },
-                onTextMessageContent: (event: TextMessageContentEvent) => {
-                  console.log('[AGUI] TextMessageContent:', event.delta);
-                  setMessages(prev => prev.map(msg => 
-                    msg.id === messageId 
-                      ? { ...msg, content: msg.content + (event.delta || '') }
-                      : msg
-                  ));
-                },
-                onTextMessageChunk: (event) => {
-                  setMessages(prev => prev.map(msg => 
-                    msg.id === messageId 
-                      ? { ...msg, content: msg.content + (event.delta || '') }
-                      : msg
-                  ));
-                },
-                onRunFinished: () => {
-                  console.log('[AGUI] Run finished');
-                  setIsStreaming(false);
-                  setMessages(prev => prev.map(msg => 
-                    msg.id === messageId 
-                      ? { ...msg, streaming: false }
-                      : msg
-                  ));
-                },
-                onRunError: (event) => {
-                  console.error('[AGUI] Run error:', event.message);
-                  setMessages(prev => [...prev, {
-                    id: `error_${Date.now()}`,
-                    role: 'error',
-                    content: '调用失败: ' + (event.message || '未知错误')
-                  }]);
-                  setIsStreaming(false);
-                }
-              }
-            }).catch(err => {
-              console.error('AGUI 调用失败:', err);
-              setMessages(prev => [...prev, {
-                id: `error_${Date.now()}`,
-                role: 'error',
-                content: '调用失败: ' + (err instanceof Error ? err.message : '未知错误')
-              }]);
-              setIsStreaming(false);
-            });
-          }, 500);
-        }
+    if (userInfo) {
+      welcomeContent += `\n\n当前求职方向：${userInfo.targetPosition || '未设置'}`;
+      if (userInfo.industry) {
+        welcomeContent += `\n当前行业偏好：${userInfo.industry}`;
       }
     }
+
+    setMessages([
+      {
+        id: 'welcome',
+        role: 'assistant',
+        content: welcomeContent,
+      },
+    ]);
+  }, [messages.length, userInfo]);
+
+  const appendAssistantChunk = useCallback((messageId: string, delta: string) => {
+    setMessages((prev) => prev.map((msg) => (
+      msg.id === messageId
+        ? { ...msg, content: msg.content + (delta || '') }
+        : msg
+    )));
   }, []);
 
-  /**
-   * 处理发送消息
-   */
-  const handleSend = useCallback(async () => {
-    if (!input.trim() || isStreaming) return;
+  const applyIncomingPatch = useCallback((patch: ResumePatch) => {
+    if (!resumeData) return false;
+
+    const updatedResume = applyPatchToResume(resumeData, patch);
+    if (!updatedResume) return false;
+
+    const patchWithPrevious = {
+      ...patch,
+      previousResume: cloneResume(resumeData),
+    };
+
+    onUpdateResumeData(updatedResume);
+    onPendingPatchChange?.(patchWithPrevious);
+    return true;
+  }, [onPendingPatchChange, onUpdateResumeData, resumeData]);
+
+  const finalizeAssistantMessage = useCallback((messageId: string) => {
+    setMessages((prev) => {
+      const next = prev.map((msg) => (
+        msg.id === messageId ? { ...msg, streaming: false } : msg
+      ));
+
+      const assistantMessage = next.find((msg) => msg.id === messageId);
+      if (!assistantMessage?.content || !resumeData) {
+        return next;
+      }
+
+      const parsedPatch = parsePatchFromContent(assistantMessage.content);
+      if (!parsedPatch) {
+        return next;
+      }
+
+      const applied = applyIncomingPatch(parsedPatch);
+      if (!applied) {
+        return [
+          ...next,
+          {
+            id: `system_${Date.now()}`,
+            role: 'system',
+            content: '检测到结构化 patch，但当前前端无法安全应用，请继续沿用文本建议。',
+          },
+        ];
+      }
+
+      return [
+        ...next,
+        {
+          id: `system_${Date.now()}`,
+          role: 'system',
+          content: parsedPatch.summary || 'AI 已生成一轮可确认的改动，右侧预览已更新。',
+        },
+      ];
+    });
+  }, [applyIncomingPatch, resumeData]);
+
+  const sendMessage = useCallback(async (rawInput: string) => {
+    const trimmed = rawInput.trim();
+    if (!trimmed || isStreaming) return;
 
     const userMessage: Message = {
       id: `msg_${Date.now()}`,
       role: 'user',
-      content: input
+      content: trimmed,
     };
-    setMessages(prev => [...prev, userMessage]);
+
+    const messageId = `assistant_msg_${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      {
+        id: messageId,
+        role: 'assistant',
+        content: '',
+        streaming: true,
+      },
+    ]);
     setInput('');
     setIsStreaming(true);
 
-    const messageId = `assistant_msg_${Date.now()}`;
+    const targetHint = activeTarget ? `当前编辑目标：${formatTargetLabel(activeTarget)}` : '当前编辑目标：整份简历';
+    let messageContent = `${targetHint}\n用户需求：${trimmed}`;
 
-    // 添加 AI 消息占位
-    setMessages(prev => [...prev, {
-      id: messageId,
-      role: 'assistant',
-      content: '',
-      streaming: true
-    }]);
+    if (userInfo && messages.length <= 2) {
+      messageContent = `请在 AI 简历编辑模式下协助修改简历。\n${targetHint}\n求职方向：${userInfo.targetPosition || ''}\n行业：${userInfo.industry || ''}\n用户需求：${trimmed}\n请优先输出解释文本；若你能返回结构化 patch，请使用 \`\`\`json\`\`\` 包裹。`;
+    }
 
     try {
       const callbacks: AguiCallbacks = {
         onRunStarted: (event) => {
-          console.log('[AGUI] Run started:', event.threadId);
           setThreadId(event.threadId);
         },
-        
         onTextMessageContent: (event: TextMessageContentEvent) => {
-          console.log('[AGUI] TextMessageContent:', event.delta);
-          // 流式累积文本
-          setMessages(prev => {
-            const updated = prev.map(msg => 
-              msg.id === messageId 
-                ? { ...msg, content: msg.content + (event.delta || '') }
-                : msg
-            );
-            console.log('[AGUI] Updated messages:', updated.find(m => m.id === messageId)?.content);
-            return updated;
-          });
+          appendAssistantChunk(messageId, event.delta || '');
         },
-
-        onTextMessageChunk: (event) => {
-          console.log('[AGUI] TextMessageChunk:', event.delta);
-          setMessages(prev => prev.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, content: msg.content + (event.delta || '') }
-              : msg
-          ));
+        onStateDelta: (event: StateDeltaEvent) => {
+          const patch = normalizePatch(event.delta);
+          if (patch && applyIncomingPatch(patch)) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `system_${Date.now()}`,
+                role: 'system',
+                content: patch.summary || '已收到结构化 patch，右侧简历草稿已更新。',
+              },
+            ]);
+          }
         },
-
-        onRunFinished: (event) => {
-          console.log('[AGUI] Run finished');
+        onStateSnapshot: (event: StateSnapshotEvent) => {
+          const patch = normalizePatch(event.snapshot);
+          if (patch && applyIncomingPatch(patch)) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `system_${Date.now()}`,
+                role: 'system',
+                content: patch.summary || '已收到结构化 patch 快照，右侧简历草稿已更新。',
+              },
+            ]);
+          }
+        },
+        onCustomEvent: (event: CustomEvent) => {
+          const patch = normalizePatch(event.value ?? event.data);
+          if (patch && applyIncomingPatch(patch)) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `system_${Date.now()}`,
+                role: 'system',
+                content: patch.summary || '已收到 AI 改动建议，等待你确认或撤销。',
+              },
+            ]);
+          }
+        },
+        onRunFinished: () => {
           setIsStreaming(false);
-          setMessages(prev => prev.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, streaming: false }
-              : msg
-          ));
+          finalizeAssistantMessage(messageId);
         },
-
         onRunError: (event) => {
-          console.error('[AGUI] Run error:', event.message);
-          setMessages(prev => [...prev, {
-            id: `error_${Date.now()}`,
-            role: 'error',
-            content: '调用失败: ' + (event.message || '未知错误')
-          }]);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `error_${Date.now()}`,
+              role: 'error',
+              content: `调用失败: ${event.message || '未知错误'}`,
+            },
+          ]);
           setIsStreaming(false);
-        }
+        },
       };
 
-      // 构建消息内容 - 直接发送用户输入,不需要附加 JSON 格式要求
-      let messageContent = input;
-      
-      // 如果是首次对话且有 userInfo,追加上下文信息
-      if (userInfo && messages.length <= 2) {
-        messageContent = `请基于以下信息帮我创建/优化简历:\n\n基本信息:\n- 姓名: ${userInfo.name}\n- 行业: ${userInfo.industry}\n- 期望职位: ${userInfo.targetPosition}${userInfo.targetCity ? '\n- 期望城市: ' + userInfo.targetCity : ''}\n\n用户需求: ${input}\n\n请以对话形式回复,告诉我你需要补充哪些信息,或者直接给出建议。`;
-      }
-
-      // 调用 AGUI
       await aguiClient.connect({
-        agentId: 'default',
+        agentId: 'resume-edit',
         message: messageContent,
         threadId: threadId || undefined,
         forwardedProps: {
-          userId: '1',
-          currentStep: 'polish',
-          resumeDraft: resumeData  // 传递当前简历数据供 Agent 参考
+          userId: String(resumeData?.user_id || '1'),
+          currentStep: 'ai_edit',
+          activeTarget,
+          resumeDraft: resumeData,
+          persistedResume,
         },
-        callbacks
+        callbacks,
       });
     } catch (error) {
-      console.error('AGUI 调用失败:', error);
-      setMessages(prev => [...prev, {
-        id: `error_${Date.now()}`,
-        role: 'error',
-        content: '调用失败: ' + (error instanceof Error ? error.message : '未知错误')
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `error_${Date.now()}`,
+          role: 'error',
+          content: `调用失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        },
+      ]);
       setIsStreaming(false);
     }
-  }, [input, isStreaming, userInfo, messages.length, threadId, resumeData]);
+  }, [
+    activeTarget,
+    appendAssistantChunk,
+    finalizeAssistantMessage,
+    isStreaming,
+    messages.length,
+    persistedResume,
+    resumeData,
+    threadId,
+    userInfo,
+  ]);
+
+  const handleSend = useCallback(async () => {
+    await sendMessage(input);
+  }, [input, sendMessage]);
+
+  const handleQuickAction = useCallback((action: string) => {
+    const sectionText = activeTarget ? `针对${formatTargetLabel(activeTarget)}` : '针对当前简历';
+    setInput(`${sectionText}${action}`);
+  }, [activeTarget]);
+
+  const handleAcceptPendingPatch = useCallback(() => {
+    if (!pendingPatch) return;
+    onChangeHistory?.((prev) => [...prev, pendingPatch]);
+    onPendingPatchChange?.(null);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `system_${Date.now()}`,
+        role: 'system',
+        content: '本轮改动已接受，你可以继续让 AI 深化优化，或点击保存写入后端。',
+      },
+    ]);
+  }, [onChangeHistory, onPendingPatchChange, pendingPatch]);
+
+  const handleRevertPendingPatch = useCallback(() => {
+    if (!pendingPatch?.previousResume) return;
+    onUpdateResumeData(cloneResume(pendingPatch.previousResume));
+    onPendingPatchChange?.(null);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `system_${Date.now()}`,
+        role: 'system',
+        content: '已撤销本轮 AI 改动，右侧简历已恢复到上一版本草稿。',
+      },
+    ]);
+  }, [onPendingPatchChange, onUpdateResumeData, pendingPatch]);
 
   return (
     <div className="ai-chat-panel">
       <div className="chat-header">
-        <h3>💬 AI 对话</h3>
-        <p>通过对话让 AI 帮您优化简历</p>
+        <h3>AI 编辑工作区</h3>
+        <div className="chat-header-meta">
+          <p>通过对话编辑简历，右侧将实时展示草稿变化</p>
+          <span className={`chat-save-status status-${saveStatus}`}>{saveStatusText}</span>
+        </div>
       </div>
+
+      <div className="chat-target-bar">
+        <div className="chat-target-label">
+          正在编辑：<strong>{formatTargetLabel(activeTarget)}</strong>
+        </div>
+        <div className="chat-target-actions">
+          {sectionOptions.map((option) => (
+            <button
+              key={option.section}
+              type="button"
+              className={`chat-target-chip ${activeTarget?.section === option.section ? 'active' : ''}`}
+              onClick={() => onActiveTargetChange?.({ section: option.section })}
+            >
+              {option.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="chat-target-chip ghost"
+            onClick={() => onActiveTargetChange?.(null)}
+          >
+            清空目标
+          </button>
+        </div>
+      </div>
+
+      {pendingPatch && (
+        <div className="pending-patch-card">
+          <div className="pending-patch-title">待确认改动</div>
+          <div className="pending-patch-summary">
+            {pendingPatch.summary || pendingPatch.previewText || 'AI 已生成一轮新的草稿修改。'}
+          </div>
+          <div className="pending-patch-actions">
+            <button type="button" className="primary" onClick={handleAcceptPendingPatch}>
+              接受本次修改
+            </button>
+            <button type="button" onClick={handleRevertPendingPatch}>
+              撤销本次修改
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="chat-messages">
         {messages.map((msg) => (
@@ -307,14 +530,32 @@ export default function AIChatPanel({ userInfo, resumeData, onUpdateResumeData }
         <div ref={messagesEndRef} />
       </div>
 
+      <div className="chat-quick-actions">
+        {QUICK_ACTIONS.map((action) => (
+          <button
+            key={action}
+            type="button"
+            className="quick-action-pill"
+            onClick={() => handleQuickAction(action)}
+          >
+            {action}
+          </button>
+        ))}
+      </div>
+
       <div className="chat-input">
-        <input
-          type="text"
+        <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="请输入您的需求,例如: 帮我写一段后端开发的工作经验..."
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="例如：把这一段项目经历改得更像后端开发岗位，突出性能优化成果"
           disabled={isStreaming}
+          rows={3}
         />
         <button onClick={handleSend} disabled={isStreaming || !input.trim()}>
           {isStreaming ? '生成中...' : '发送'}

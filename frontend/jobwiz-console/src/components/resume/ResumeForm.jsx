@@ -1,4 +1,4 @@
-import { useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useCallback, useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
 import FormToolbar from './FormToolbar';
 import SectionFormItem from './SectionFormItem';
 import './ResumeForm.css';
@@ -26,7 +26,7 @@ const getProfileLink = (baseinfo = {}) => {
 
 const ResumeForm = forwardRef(({ resumeData, onChange }, ref) => {
   const formRef = useRef(null);
-  const modules = resumeData?.content?.modules || [];
+  const modules = useMemo(() => resumeData?.content?.modules || [], [resumeData]);
 
   // 暴露 scrollToSection 方法给父组件
   useImperativeHandle(ref, () => ({

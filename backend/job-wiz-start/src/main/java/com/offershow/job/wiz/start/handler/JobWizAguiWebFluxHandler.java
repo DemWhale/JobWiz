@@ -1,5 +1,7 @@
 package com.offershow.job.wiz.start.handler;
 
+import com.alibaba.fastjson.JSON;
+import com.offershow.job.wiz.common.dto.ResumePatchDTO;
 import com.offershow.job.wiz.common.dto.context.AgentContext;
 import com.offershow.job.wiz.common.dto.context.UserSessionKey;
 import com.offershow.job.wiz.service.builder.ReActAgentBuilder;
@@ -22,8 +24,13 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 自定义 AGUI WebFlux Handler
@@ -38,6 +45,10 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class JobWizAguiWebFluxHandler {
+
+    private static final Pattern PATCH_BLOCK_PATTERN =
+            Pattern.compile("```json\\s*(\\{[\\s\\S]*?\"type\"\\s*:\\s*\"resume_patch\"[\\s\\S]*?\\})\\s*```",
+                    Pattern.CASE_INSENSITIVE);
 
     @Autowired
     private AguiEventEncoder encoder;
@@ -100,10 +111,11 @@ public class JobWizAguiWebFluxHandler {
             Flux<AguiEvent> events = adapter.run(input);
 
             // 6. 编码为 SSE 格式,并添加会话持久化逻辑
+            AtomicReference<String> assistantMessageIdRef = new AtomicReference<>();
+            StringBuilder assistantTextBuffer = new StringBuilder();
+
             Flux<ServerSentEvent<String>> sseStream = events
-                    .map(event -> ServerSentEvent.<String>builder()
-                            .data(encoder.encodeToJson(event).trim()) // 编码为 JSON
-                            .build())
+                    .flatMap(event -> encodeEventStream(event, input, assistantMessageIdRef, assistantTextBuffer))
                     .doOnComplete(() -> {
                         // 流完成时保存会话
                         log.info("SSE stream completed for run {}", input.getRunId());
@@ -141,8 +153,8 @@ public class JobWizAguiWebFluxHandler {
      * @return AgentContext 实例
      */
     private AgentContext buildAgentContext(RunAgentInput input, ServerRequest request) {
-        // TODO: 从鉴权信息中获取真实 userId
-        String userId = "1";
+        Map<String, Object> reqParams = input.getForwardedProps();
+        String userId = extractUserId(reqParams);
         String threadId = input.getThreadId();
         String runId = input.getRunId();
         String agentId = resolveAgentId(input, request);
@@ -154,14 +166,105 @@ public class JobWizAguiWebFluxHandler {
                 .threadId(threadId)
                 .runId(runId)
                 .userSessionKey(userSessionKey)
-                .reqParams(input.getForwardedProps())
+                .reqParams(reqParams)
                 .build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String extractUserId(Map<String, Object> reqParams) {
+        if (reqParams == null || reqParams.isEmpty()) {
+            return "1";
+        }
+
+        Object directUserId = reqParams.get("userId");
+        if (directUserId != null) {
+            return String.valueOf(directUserId);
+        }
+
+        Object agentContext = reqParams.get("agentContext");
+        if (agentContext instanceof Map<?, ?> nestedContext) {
+            Object nestedUserId = ((Map<String, Object>) nestedContext).get("userId");
+            if (nestedUserId != null) {
+                return String.valueOf(nestedUserId);
+            }
+        }
+
+        return "1";
     }
 
     private String resolveAgentId(RunAgentInput input, ServerRequest request) {
         String pathAgentId = request.pathVariables().get("agentId");
         String headerAgenId = request.headers().firstHeader("X-Agent-Id");
         return ObjectUtils.firstNonNull(pathAgentId, headerAgenId);
+    }
+
+    private Flux<ServerSentEvent<String>> encodeEventStream(AguiEvent event,
+                                                            RunAgentInput input,
+                                                            AtomicReference<String> assistantMessageIdRef,
+                                                            StringBuilder assistantTextBuffer) {
+        trackAssistantText(event, assistantMessageIdRef, assistantTextBuffer);
+
+        List<ServerSentEvent<String>> results = new ArrayList<>();
+
+        if (event instanceof AguiEvent.RunFinished) {
+            ResumePatchDTO patch = parsePatchFromText(assistantTextBuffer.toString());
+            if (patch != null) {
+                AguiEvent.Custom patchEvent =
+                        new AguiEvent.Custom(input.getThreadId(), input.getRunId(), "resume_patch", patch);
+                results.add(ServerSentEvent.<String>builder()
+                        .data(encoder.encodeToJson(patchEvent).trim())
+                        .build());
+            }
+        }
+
+        results.add(ServerSentEvent.<String>builder()
+                .data(encoder.encodeToJson(event).trim())
+                .build());
+
+        return Flux.fromIterable(results);
+    }
+
+    private void trackAssistantText(AguiEvent event,
+                                    AtomicReference<String> assistantMessageIdRef,
+                                    StringBuilder assistantTextBuffer) {
+        if (event instanceof AguiEvent.TextMessageStart start) {
+            if ("assistant".equalsIgnoreCase(start.role())) {
+                assistantMessageIdRef.set(start.messageId());
+                assistantTextBuffer.setLength(0);
+            }
+            return;
+        }
+
+        if (event instanceof AguiEvent.TextMessageContent content) {
+            if (Objects.equals(assistantMessageIdRef.get(), content.messageId())) {
+                assistantTextBuffer.append(content.delta());
+            }
+            return;
+        }
+
+        if (event instanceof AguiEvent.TextMessageEnd end
+                && Objects.equals(assistantMessageIdRef.get(), end.messageId())) {
+            assistantMessageIdRef.set(null);
+        }
+    }
+
+    private ResumePatchDTO parsePatchFromText(String content) {
+        if (content == null || content.isBlank()) {
+            return null;
+        }
+
+        Matcher matcher = PATCH_BLOCK_PATTERN.matcher(content);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        String jsonBlock = matcher.group(1);
+        try {
+            return JSON.parseObject(jsonBlock, ResumePatchDTO.class);
+        } catch (Exception error) {
+            log.warn("Failed to parse resume_patch from assistant content: {}", error.getMessage());
+            return null;
+        }
     }
 
     /**

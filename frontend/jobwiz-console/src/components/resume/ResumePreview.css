@@ -27,6 +27,14 @@
   gap: 8px;
 }
 
+.resume-preview-slider-group {
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+  flex: 1;
+  max-width: 220px;
+}
+
 .resume-preview-zoom-btn {
   border: 1px solid #cbd5e1;
   background: white;
@@ -43,6 +51,36 @@
   background: #2563eb;
   border-color: #2563eb;
   color: white;
+}
+
+.resume-preview-slider {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #93c5fd 0%, #2563eb 100%);
+  outline: none;
+}
+
+.resume-preview-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+}
+
+.resume-preview-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
 }
 
 .resume-preview-zoom-indicator {
@@ -78,6 +116,12 @@
     flex-wrap: wrap;
     align-items: flex-start;
     padding: 14px 16px;
+  }
+
+  .resume-preview-slider-group {
+    order: 3;
+    width: 100%;
+    max-width: none;
   }
 
   .resume-preview-zoom-indicator {

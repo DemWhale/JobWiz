@@ -31,7 +31,7 @@ function App() {
         if (feature) {
           setUserFeature(feature);
         }
-      } catch (error) {
+      } catch {
         console.log('用户信息不存在或无法获取，首次登录或后端未启动');
       }
       

@@ -58,6 +58,11 @@
   font-weight: 500;
 }
 
+.status-dirty {
+  color: #d97706;
+  font-weight: 500;
+}
+
 .status-saved {
   color: #10b981;
 }

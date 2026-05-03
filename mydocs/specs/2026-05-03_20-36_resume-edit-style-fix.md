@@ -54,13 +54,14 @@ Out-of-Scope:
 - 已修改 `ResumeEdit.jsx` 与 `ResumeEdit.css`：为普通模式左右区增加独立工作区面板外壳，形成两个分离模块。
 - 已修改 `ResumePreview.jsx`：增加预览缩放状态、默认适应容器缩放逻辑和百分比缩放控制。
 - 已修改 `ResumePreview.css`：将右侧预览改为“工具栏 + 画布区”结构，并支持缩放后的居中展示。
+- 已修改 `ResumePreview.jsx` 与 `ResumePreview.css`：在预设缩放按钮之外补充百分比拖拽滑杆，兼顾快速切换和精细调整。
 - 已修改 `ResumeForm.jsx`：移除表单内部对模块数据的本地副本，直接基于 `resumeData` 更新，减少表单与预览状态漂移。
 - 已修改 `ResumeForm.jsx` 与 `ResumeHeader.jsx`：补齐基础信息中的“学历 / 主页链接”编辑项，并让右侧头部展示与左侧输入一一对应。
 - 已修改 `resume.css` 与 `ResumeForm.css`：补充头部链接文本和紧凑型简介输入的样式。
 
 ## Validation
 
-- 已完成静态样式修复，待在编辑页手动验证左右独立模块、分栏、独立滚动、预览适应展示、缩放控制和基础信息联动。
+- 已完成静态样式修复，待在编辑页手动验证左右独立模块、分栏、独立滚动、预览适应展示、缩放控制（按钮 + 滑杆）和基础信息联动。
 
 ## Resume / Handoff
 

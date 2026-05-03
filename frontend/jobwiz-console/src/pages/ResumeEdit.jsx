@@ -15,10 +15,13 @@ const ResumeEdit = ({ userId }) => {
   const [resume, setResume] = useState(null);
   const [templateMeta, setTemplateMeta] = useState(null);
   const [resumeData, setResumeData] = useState(null);
+  const [persistedResume, setPersistedResume] = useState(null);
+  const [pendingPatch, setPendingPatch] = useState(null);
+  const [activeTarget, setActiveTarget] = useState(null);
+  const [, setChangeHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error' | 'draft'
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'draft'
   const [savedResumeId, setSavedResumeId] = useState(null);
-  const saveTimerRef = useRef(null);
   const formRef = useRef(null);
   
   // 拖拽分割线状态
@@ -27,6 +30,50 @@ const ResumeEdit = ({ userId }) => {
 
   // 已持久化的简历 ID（草稿首次保存后才有）
   const effectiveId = savedResumeId || (!isNewDraft ? id : null);
+
+  const fetchTemplateMeta = useCallback(async (templateId) => {
+    try {
+      const template = await resumeTemplateApi.getById(templateId);
+      if (template?.meta) {
+        setTemplateMeta(JSON.parse(template.meta));
+      }
+    } catch {
+      console.log('获取模板信息失败，使用默认布局');
+    }
+  }, []);
+
+  const fetchResume = useCallback(async () => {
+    try {
+      const data = await resumeApi.getById(id);
+      setResume(data);
+
+      let parsed = { content: { modules: [] }, css_config: {} };
+      if (data) {
+        parsed = {
+          content: data.content ? (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : { modules: [] },
+          css_config: data.cssConfig ? (typeof data.cssConfig === 'string' ? JSON.parse(data.cssConfig) : data.cssConfig) : {},
+          template_id: data.templateId,
+          title: data.title,
+          user_id: data.userId,
+          uuid: data.uuid,
+          share_status: data.shareStatus
+        };
+      }
+      setResumeData(parsed);
+      setPersistedResume(parsed);
+      setPendingPatch(null);
+      setActiveTarget(null);
+      setChangeHistory([]);
+
+      if (data?.templateId) {
+        fetchTemplateMeta(data.templateId);
+      }
+    } catch (error) {
+      console.error('获取简历失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchTemplateMeta, id]);
 
   useEffect(() => {
     if (isNewDraft) {
@@ -37,6 +84,7 @@ const ResumeEdit = ({ userId }) => {
         // AI 模式：使用传入的 resumeData 和 userInfo
         if (state?.resumeData) {
           setResumeData(state.resumeData);
+          setPersistedResume(state.resumeData);
         }
         if (state?.templateId) {
           fetchTemplateMeta(state.templateId);
@@ -49,6 +97,7 @@ const ResumeEdit = ({ userId }) => {
       // 普通草稿模式
       if (state?.resumeData) {
         setResumeData(state.resumeData);
+        setPersistedResume(state.resumeData);
       }
       if (state?.templateId) {
         fetchTemplateMeta(state.templateId);
@@ -60,16 +109,7 @@ const ResumeEdit = ({ userId }) => {
 
     if (!id) return;
     fetchResume();
-  }, [id, isAIMode]);
-
-  // 清理定时器
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, []);
+  }, [fetchResume, fetchTemplateMeta, id, isAIMode, isNewDraft, location.state]);
 
   // 拖拽分割线逻辑
   useEffect(() => {
@@ -108,90 +148,8 @@ const ResumeEdit = ({ userId }) => {
     e.preventDefault();
   };
 
-  const fetchResume = async () => {
-    try {
-      const data = await resumeApi.getById(id);
-      setResume(data);
-
-      // 解析简历数据 (新 schema)
-      // 后端字段直接对应 data.json 顶层结构
-      let parsed = { content: { modules: [] }, css_config: {} };
-      if (data) {
-        parsed = {
-          content: data.content ? (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : { modules: [] },
-          css_config: data.cssConfig ? (typeof data.cssConfig === 'string' ? JSON.parse(data.cssConfig) : data.cssConfig) : {},
-          template_id: data.templateId,
-          title: data.title,
-          user_id: data.userId,
-          uuid: data.uuid,
-          share_status: data.shareStatus
-        };
-      }
-      setResumeData(parsed);
-
-      // 获取模板 meta
-      if (data?.templateId) {
-        fetchTemplateMeta(data.templateId);
-      }
-    } catch (error) {
-      console.error('获取简历失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 获取模板 meta（草稿和已有简历共用）
-  const fetchTemplateMeta = async (templateId) => {
-    try {
-      const template = await resumeTemplateApi.getById(templateId);
-      if (template?.meta) {
-        setTemplateMeta(JSON.parse(template.meta));
-      }
-    } catch (e) {
-      console.log('获取模板信息失败，使用默认布局');
-    }
-  };
-
-  // 防抖保存
-  const debouncedSave = useCallback((data) => {
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    // 草稿模式（还未持久化），仅维护本地状态，不调后端
-    if (!effectiveId) {
-      setSaveStatus('draft');
-      return;
-    }
-
-    setSaveStatus('saving');
-
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        await resumeApi.update({
-          id: Number(effectiveId),
-          // 直接存储 content 和 css_config
-          content: JSON.stringify(data.content || data),
-          cssConfig: JSON.stringify(data.css_config || {}),
-        });
-        setSaveStatus('saved');
-        // 2秒后清除保存状态
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch (error) {
-        console.error('保存简历失败:', error);
-        setSaveStatus('error');
-        setTimeout(() => setSaveStatus('idle'), 3000);
-      }
-    }, 500);
-  }, [effectiveId]);
-
   // 手动保存（立即执行，不走防抖）
   const handleManualSave = useCallback(async () => {
-    // 先取消防抖定时器
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
     if (!resumeData) return;
 
     setSaveStatus('saving');
@@ -209,6 +167,8 @@ const ResumeEdit = ({ userId }) => {
         });
         setSavedResumeId(created.id);
         setResume(created);
+        setPersistedResume(resumeData);
+        setPendingPatch(null);
         setSaveStatus('saved');
         // 更新 URL 为正式的编辑页（不刷新页面）
         navigate(`/resume/edit/${created.id}`, { replace: true, state: null });
@@ -220,6 +180,8 @@ const ResumeEdit = ({ userId }) => {
           content: JSON.stringify(resumeData.content || resumeData),
           cssConfig: JSON.stringify(resumeData.css_config || {}),
         });
+        setPersistedResume(resumeData);
+        setPendingPatch(null);
         setSaveStatus('saved');
       }
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -232,11 +194,16 @@ const ResumeEdit = ({ userId }) => {
 
   const handleFormChange = useCallback((newData) => {
     setResumeData(newData);
-    debouncedSave(newData);
-  }, [debouncedSave]);
+    setPendingPatch(null);
+    setSaveStatus((prev) => (prev === 'saving' ? prev : 'dirty'));
+  }, []);
 
   const handleSectionClick = (sectionId) => {
-    // 点击右侧 section 时，锚定到左侧对应表单
+    if (isAIMode) {
+      setActiveTarget({ section: sectionId });
+      return;
+    }
+
     if (formRef.current) {
       formRef.current.scrollToSection(sectionId);
     }
@@ -263,6 +230,7 @@ const ResumeEdit = ({ userId }) => {
           </h1>
           <div className="save-status">
             {saveStatus === 'draft' && <span className="status-draft">草稿（未保存）</span>}
+            {saveStatus === 'dirty' && <span className="status-dirty">未保存</span>}
             {saveStatus === 'saving' && <span className="status-saving">保存中...</span>}
             {saveStatus === 'saved' && <span className="status-saved">✓ 已保存</span>}
             {saveStatus === 'error' && <span className="status-error">✗ 保存失败</span>}
@@ -285,6 +253,13 @@ const ResumeEdit = ({ userId }) => {
               <AIChatPanel
                 userInfo={location.state?.userInfo}
                 resumeData={resumeData}
+                persistedResume={persistedResume}
+                pendingPatch={pendingPatch}
+                activeTarget={activeTarget}
+                saveStatus={saveStatus}
+                onPendingPatchChange={setPendingPatch}
+                onActiveTargetChange={setActiveTarget}
+                onChangeHistory={setChangeHistory}
                 onUpdateResumeData={handleFormChange}
               />
             </div>
@@ -313,6 +288,7 @@ const ResumeEdit = ({ userId }) => {
                 <ResumePreview
                   resumeData={resumeData}
                   templateMeta={templateMeta}
+                  activeSectionId={activeTarget?.section}
                   onSectionClick={handleSectionClick}
                 />
               </div>
