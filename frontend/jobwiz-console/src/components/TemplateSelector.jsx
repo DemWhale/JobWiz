@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { resumeTemplateApi } from '../services/api';
+import ResumePreview from './resume/ResumePreview';
 import './TemplateSelector.css';
 
 // 预填充简历数据（基于 data.json schema）
@@ -97,6 +98,52 @@ const DEFAULT_RESUME_DATA = {
   share_status: 1
 };
 
+const TEMPLATE_PREVIEW_DATA = {
+  ...DEFAULT_RESUME_DATA,
+  content: {
+    modules: DEFAULT_RESUME_DATA.content.modules.map((module) => {
+      if (module.name === 'baseinfo') {
+        return {
+          ...module,
+          child: [{
+            name: '张同学',
+            phone: '13800000000',
+            email: 'hello@jobwiz.cn',
+            edu: '本科',
+            major: '计算机科学与技术',
+            github: 'https://github.com/jobwiz',
+          }],
+        };
+      }
+      if (module.name === 'eduabout') {
+        return {
+          ...module,
+          child: [{ school: '上海交通大学', major: '软件工程', edu: '本科', start_time: '2021.09', end_time: '2025.06' }],
+        };
+      }
+      if (module.name === 'workbg') {
+        return {
+          ...module,
+          child: [{ company: 'JobWiz Labs', position: '后端开发实习生', start_time: '2025.03', end_time: '至今', job_detail: '负责简历智能解析服务建设，优化接口响应速度。' }],
+        };
+      }
+      if (module.name === 'projectabout') {
+        return {
+          ...module,
+          child: [{ project_title: 'AI 简历助手', project_role: '核心开发', start_time: '2025.01', end_time: '2025.03', project_detail: '设计交互式简历编辑链路，支持模块化渲染与 AI 优化。' }],
+        };
+      }
+      if (module.name === 'self_comment') {
+        return { ...module, child: [{ self_comment: '具备扎实工程基础，关注系统稳定性与用户体验。' }] };
+      }
+      if (module.name === 'skills') {
+        return { ...module, is_open: true, child: [{ skills: 'Java / React / AgentScope / Prompt Engineering' }] };
+      }
+      return module;
+    }),
+  },
+};
+
 const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -148,6 +195,30 @@ const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
     }
   };
 
+  const parseTemplateMeta = (template) => {
+    if (!template?.meta) return null;
+    if (typeof template.meta === 'object') return template.meta;
+    try {
+      return JSON.parse(template.meta);
+    } catch {
+      return null;
+    }
+  };
+
+  const renderTemplatePreview = (template) => {
+    return (
+      <ResumePreview
+        resumeData={{
+          ...TEMPLATE_PREVIEW_DATA,
+          template_id: template.id,
+          title: template.title,
+        }}
+        templateMeta={parseTemplateMeta(template)}
+        compact
+      />
+    );
+  };
+
   if (!open) return null;
 
   return (
@@ -182,13 +253,7 @@ const TemplateSelector = ({ open, onClose, userId, onSelect }) => {
                   onClick={() => handleSelect(template.id)}
                 >
                   <div className="template-card-preview">
-                    {template.preview ? (
-                      <img src={template.preview} alt={template.title} />
-                    ) : (
-                      <span style={{ color: '#999', fontSize: '13px' }}>
-                        {template.title}
-                      </span>
-                    )}
+                    {renderTemplatePreview(template)}
                   </div>
                   <div className="template-card-title">{template.title}</div>
                   {template.description && (

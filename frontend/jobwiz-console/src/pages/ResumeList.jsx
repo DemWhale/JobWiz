@@ -2,14 +2,49 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resumeApi } from '../services/api';
 import TemplateSelector from '../components/TemplateSelector';
+import ResumePreview from '../components/resume/ResumePreview';
 import './ResumeList.css';
+
+const parseJsonMaybe = (value, fallback) => {
+  if (!value) return fallback;
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
+const buildResumeData = (resume) => {
+  const content = parseJsonMaybe(resume.content, null);
+  if (content?.modules) {
+    return {
+      content,
+      css_config: parseJsonMaybe(resume.cssConfig, {}),
+      template_id: resume.templateId,
+      title: resume.title,
+      user_id: resume.userId,
+    };
+  }
+
+  const oldDetail = parseJsonMaybe(resume.resumeDetail, null);
+  if (oldDetail?.content?.modules) return oldDetail;
+  return null;
+};
 
 const ResumeList = ({ userId }) => {
   const navigate = useNavigate();
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredResumeId, setHoveredResumeId] = useState(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [creatingImported, setCreatingImported] = useState(false);
+  const [importError, setImportError] = useState('');
 
   // 加载简历列表
   useEffect(() => {
@@ -47,6 +82,9 @@ const ResumeList = ({ userId }) => {
   // 从 resume_detail 解析标题（如果没有 title 字段）
   const getResumeTitle = (resume) => {
     if (resume.title) return resume.title;
+    const data = buildResumeData(resume);
+    const baseinfo = data?.content?.modules?.find((module) => module.name === 'baseinfo')?.child?.[0];
+    if (baseinfo?.name) return `${baseinfo.name}的简历`;
     try {
       const detail = JSON.parse(resume.resumeDetail || '{}');
       const name = detail.basics?.name || '未命名';
@@ -60,25 +98,22 @@ const ResumeList = ({ userId }) => {
 
   // 渲染简历缩略图
   const renderThumbnail = (resume) => {
-    try {
-      const detail = JSON.parse(resume.resumeDetail || '{}');
+    const resumeData = buildResumeData(resume);
+    if (resumeData) {
       return (
         <div className="resume-thumbnail">
-          <div className="thumbnail-preview">
-            <div className="thumbnail-name">{detail.basics?.name || ''}</div>
-            <div className="thumbnail-headline">{detail.basics?.headline || ''}</div>
-          </div>
-        </div>
-      );
-    } catch {
-      return (
-        <div className="resume-thumbnail">
-          <div className="thumbnail-preview empty">
-            <span>暂无预览</span>
-          </div>
+          <ResumePreview resumeData={resumeData} compact />
         </div>
       );
     }
+
+    return (
+      <div className="resume-thumbnail">
+        <div className="thumbnail-preview empty">
+          <span>暂无预览</span>
+        </div>
+      </div>
+    );
   };
 
   const handleCreate = () => {
@@ -102,8 +137,10 @@ const ResumeList = ({ userId }) => {
   };
 
   const handleImport = () => {
-    // 导入现有简历，本期不实现
-    console.log('导入现有简历');
+    setImportOpen(true);
+    setImportFile(null);
+    setImportResult(null);
+    setImportError('');
   };
 
   const handleEdit = (resume, type) => {
@@ -112,6 +149,56 @@ const ResumeList = ({ userId }) => {
     } else {
       // AI 编辑，后续 Spec E 实现
       navigate(`/resume/edit/${resume.id}?mode=ai`);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await resumeApi.delete(deleteTarget.id);
+      setResumes((prev) => prev.filter((resume) => resume.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error('删除简历失败:', error);
+      alert('删除失败，请稍后重试');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleImportParse = async () => {
+    if (!importFile) return;
+    setImporting(true);
+    setImportError('');
+    try {
+      const result = await resumeApi.parseImport(importFile);
+      setImportResult(result);
+    } catch (error) {
+      setImportError(error.response?.data?.message || error.message || '解析失败，请换一个 PDF / Word 文件重试');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleCreateImportedResume = async () => {
+    if (!importResult) return;
+    setCreatingImported(true);
+    setImportError('');
+    try {
+      const created = await resumeApi.create({
+        userId: Number(userId),
+        templateId: null,
+        title: importResult.title || '导入简历',
+        content: JSON.stringify(importResult.content),
+        cssConfig: JSON.stringify(importResult.cssConfig || {}),
+      });
+      setImportOpen(false);
+      navigate(`/resume/edit/${created.id}`);
+    } catch (error) {
+      setImportError(error.response?.data?.message || error.message || '创建导入简历失败');
+    } finally {
+      setCreatingImported(false);
     }
   };
 
@@ -154,8 +241,6 @@ const ResumeList = ({ userId }) => {
               <div
                 key={resume.id}
                 className="resume-card"
-                onMouseEnter={() => setHoveredResumeId(resume.id)}
-                onMouseLeave={() => setHoveredResumeId(null)}
               >
                 {renderThumbnail(resume)}
                 <div className="resume-info">
@@ -164,22 +249,29 @@ const ResumeList = ({ userId }) => {
                     最后更新于 {formatRelativeTime(resume.gmtModified)}
                   </p>
                 </div>
-                {hoveredResumeId === resume.id && (
-                  <div className="resume-actions">
-                    <button
-                      className="action-btn edit-btn"
-                      onClick={() => handleEdit(resume, 'manual')}
-                    >
-                      ✏️ 手动编辑
-                    </button>
-                    <button
-                      className="action-btn ai-edit-btn"
-                      onClick={() => handleEdit(resume, 'ai')}
-                    >
-                      ✨ AI 编辑
-                    </button>
-                  </div>
-                )}
+                <div className="resume-actions">
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={() => handleEdit(resume, 'manual')}
+                  >
+                    手动编辑
+                  </button>
+                  <button
+                    className="action-btn ai-edit-btn"
+                    onClick={() => handleEdit(resume, 'ai')}
+                  >
+                    AI 编辑
+                  </button>
+                  <button
+                    className="action-btn delete-btn"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setDeleteTarget(resume);
+                    }}
+                  >
+                    删除
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -198,6 +290,94 @@ const ResumeList = ({ userId }) => {
         userId={userId}
         onSelect={handleTemplateSelect}
       />
+
+      {deleteTarget && (
+        <div className="delete-dialog-backdrop" onClick={() => !deleting && setDeleteTarget(null)}>
+          <div className="delete-dialog" onClick={(event) => event.stopPropagation()}>
+            <h2>删除简历</h2>
+            <p>确定删除「{getResumeTitle(deleteTarget)}」吗？删除后无法恢复。</p>
+            <div className="delete-dialog-actions">
+              <button type="button" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+                取消
+              </button>
+              <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? '删除中...' : '确认删除'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {importOpen && (
+        <div className="import-dialog-backdrop" onClick={() => !importing && !creatingImported && setImportOpen(false)}>
+          <div className="import-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="import-dialog-header">
+              <div>
+                <h2>导入现有简历</h2>
+                <p>支持 PDF、DOCX、DOC。解析后会生成一份可继续编辑的结构化简历。</p>
+              </div>
+              <button type="button" onClick={() => setImportOpen(false)} disabled={importing || creatingImported}>
+                关闭
+              </button>
+            </div>
+
+            <div className="import-uploader">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] || null;
+                  setImportFile(file);
+                  setImportResult(null);
+                  setImportError('');
+                }}
+              />
+              <button type="button" onClick={handleImportParse} disabled={!importFile || importing}>
+                {importing ? '解析中...' : '开始解析'}
+              </button>
+            </div>
+
+            {importError && <div className="import-error">{importError}</div>}
+
+            {importResult && (
+              <div className="import-result">
+                <div className="import-summary">
+                  <span>文件：{importResult.fileName}</span>
+                  <span>文本：{importResult.textLength || 0} 字</span>
+                  <span>置信度：{Math.round((importResult.confidence || 0) * 100)}%</span>
+                </div>
+                <div className="import-sections">
+                  {(importResult.extractedSections || []).map((section) => (
+                    <span key={section}>{section}</span>
+                  ))}
+                  {(importResult.missingFields || []).map((field) => (
+                    <span key={field} className="missing">缺少 {field}</span>
+                  ))}
+                </div>
+                <div className="import-preview">
+                  <ResumePreview
+                    resumeData={{
+                      content: importResult.content,
+                      css_config: importResult.cssConfig || {},
+                      title: importResult.title,
+                      user_id: userId,
+                    }}
+                    compact
+                  />
+                </div>
+                <div className="import-dialog-actions">
+                  <button type="button" onClick={() => setImportResult(null)} disabled={creatingImported}>
+                    重新选择
+                  </button>
+                  <button type="button" className="primary" onClick={handleCreateImportedResume} disabled={creatingImported}>
+                    {creatingImported ? '创建中...' : '创建这份简历'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

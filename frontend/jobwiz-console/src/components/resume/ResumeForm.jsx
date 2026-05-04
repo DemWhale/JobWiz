@@ -24,7 +24,7 @@ const getProfileLink = (baseinfo = {}) => {
   return '';
 };
 
-const ResumeForm = forwardRef(({ resumeData, onChange, visibleSections = null }, ref) => {
+const ResumeForm = forwardRef(({ resumeData, onChange, visibleSections = null, focusedItem = null }, ref) => {
   const formRef = useRef(null);
   const modules = useMemo(() => resumeData?.content?.modules || [], [resumeData]);
   const sectionFilter = useMemo(
@@ -130,6 +130,13 @@ const ResumeForm = forwardRef(({ resumeData, onChange, visibleSections = null },
   const projectabout = findModule('projectabout').child;
   const skills = findModule('skills').child[0]?.skills || '';
   const showSection = useCallback((sectionId) => !sectionFilter || sectionFilter.has(sectionId), [sectionFilter]);
+  const filterItems = useCallback((sectionId, items) => {
+    if (focusedItem?.section !== sectionId || typeof focusedItem.itemIndex !== 'number') {
+      return items.map((item, index) => ({ item, index }));
+    }
+    const item = items[focusedItem.itemIndex] || {};
+    return [{ item, index: focusedItem.itemIndex }];
+  }, [focusedItem]);
 
   return (
     <div className="resume-form" ref={formRef}>
@@ -321,11 +328,11 @@ const ResumeForm = forwardRef(({ resumeData, onChange, visibleSections = null },
       {/* 工作经历 */}
       {showSection('workbg') && (
         <>
-          {(workbg.length === 0 ? [{}] : workbg).map((exp, index) => (
+          {filterItems('workbg', workbg.length === 0 ? [{}] : workbg).map(({ item: exp, index }) => (
             <SectionFormItem
               key={index}
-              sectionId="workbg"
-              title="工作经历"
+              sectionId={`workbg-${index}`}
+              title={`工作经历${workbg.length > 1 ? ` · 第 ${index + 1} 条` : ''}`}
               onAdd={() => addModuleItem('workbg', { company: '', position: '', start_time: '', end_time: '', job_detail: '' })}
               onRemove={workbg.length > 1 ? () => removeModuleItem('workbg', index) : undefined}
               removable={workbg.length > 1}
@@ -387,11 +394,11 @@ const ResumeForm = forwardRef(({ resumeData, onChange, visibleSections = null },
       {/* 项目经历 */}
       {showSection('projectabout') && (
         <>
-          {(projectabout.length === 0 ? [{}] : projectabout).map((proj, index) => (
+          {filterItems('projectabout', projectabout.length === 0 ? [{}] : projectabout).map(({ item: proj, index }) => (
             <SectionFormItem
               key={index}
-              sectionId="projectabout"
-              title="项目经历"
+              sectionId={`projectabout-${index}`}
+              title={`项目经历${projectabout.length > 1 ? ` · 第 ${index + 1} 条` : ''}`}
               onAdd={() => addModuleItem('projectabout', { project_title: '', project_role: '', start_time: '', end_time: '', project_detail: '' })}
               onRemove={projectabout.length > 1 ? () => removeModuleItem('projectabout', index) : undefined}
               removable={projectabout.length > 1}

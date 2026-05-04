@@ -106,6 +106,13 @@ export interface ToolCallEndEvent extends BaseAguiEvent {
   toolCallId: string;
 }
 
+/** 工具调用结果事件 - ToolCallResult */
+export interface ToolCallResultEvent extends BaseAguiEvent {
+  type: 'ToolCallResult';
+  toolCallId: string;
+  result?: unknown;
+}
+
 /** 状态管理事件 - StateSnapshot */
 export interface StateSnapshotEvent extends BaseAguiEvent {
   type: 'StateSnapshot';
@@ -123,6 +130,13 @@ export interface CustomActivityEvent extends BaseAguiEvent {
   type: 'CustomActivity';
   activityType: string;
   data?: unknown;
+}
+
+/** 推理内容事件 */
+export interface ReasoningMessageContentEvent extends BaseAguiEvent {
+  type: 'ReasoningMessageContent';
+  messageId?: string;
+  delta?: string;
 }
 
 /** 特殊事件 - CustomEvent */
@@ -147,9 +161,11 @@ export type AguiEvent =
   | ToolCallStartEvent
   | ToolCallArgsEvent
   | ToolCallEndEvent
+  | ToolCallResultEvent
   | StateSnapshotEvent
   | StateDeltaEvent
   | CustomActivityEvent
+  | ReasoningMessageContentEvent
   | CustomEvent;
 
 /** AGUI 请求体 */
@@ -178,10 +194,12 @@ export interface AguiCallbacks {
   onToolCallStart?: (event: ToolCallStartEvent) => void;
   onToolCallArgs?: (event: ToolCallArgsEvent) => void;
   onToolCallEnd?: (event: ToolCallEndEvent) => void;
+  onToolCallResult?: (event: ToolCallResultEvent) => void;
   onStateSnapshot?: (event: StateSnapshotEvent) => void;
   onStateDelta?: (event: StateDeltaEvent) => void;
   onCustomActivity?: (event: CustomActivityEvent) => void;
   onCustomEvent?: (event: CustomEvent) => void;
+  onReasoningMessageContent?: (event: ReasoningMessageContentEvent) => void;
 }
 
 /** 连接选项 */
@@ -401,7 +419,7 @@ export class AguiClient {
         break;
 
       case 'TOOL_CALL_RESULT':
-        // ToolCallResult 事件(目前不需要处理)
+        callbacks.onToolCallResult?.(event as ToolCallResultEvent);
         break;
 
       // State management events
@@ -442,7 +460,7 @@ export class AguiClient {
         break;
 
       case 'REASONING_MESSAGE_CONTENT':
-        // ReasoningMessageContent 事件(目前不需要处理)
+        callbacks.onReasoningMessageContent?.(event as ReasoningMessageContentEvent);
         break;
 
       case 'REASONING_MESSAGE_END':

@@ -3,14 +3,22 @@
  * @param {Array} items - workbg 模块的 child 数组
  *   [{ company, position, department, start_time, end_time, job_detail }]
  */
-const ResumeExperience = ({ items }) => {
+const ResumeExperience = ({ items, activeIndex, onItemClick }) => {
   if (!items || items.length === 0) return null;
 
   return (
     <div className="resume-timeline">
       {items.map((item, index) => {
         return (
-          <div key={item.id || index} className="resume-timeline-item">
+          <div
+            key={item.id || index}
+            className={`resume-timeline-item ${activeIndex === index ? 'is-active' : ''}`}
+            onClick={(event) => {
+              if (!onItemClick) return;
+              event.stopPropagation();
+              onItemClick(index);
+            }}
+          >
             <div className="resume-timeline-header">
               <span className="resume-timeline-title">{item.company}</span>
               <span className="resume-timeline-date">

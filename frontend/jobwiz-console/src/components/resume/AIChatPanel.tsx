@@ -3,9 +3,14 @@ import {
   aguiClient,
   type AguiCallbacks,
   type CustomEvent,
+  type ReasoningMessageContentEvent,
   type StateDeltaEvent,
   type StateSnapshotEvent,
   type TextMessageContentEvent,
+  type ToolCallArgsEvent,
+  type ToolCallEndEvent,
+  type ToolCallResultEvent,
+  type ToolCallStartEvent,
 } from '../../services/agui';
 import './AIChatPanel.css';
 
@@ -56,6 +61,22 @@ interface ResumePatch {
   previousResume?: ResumeData;
 }
 
+interface ProcessTodoItem {
+  label: string;
+  status: 'pending' | 'doing' | 'done' | 'error';
+}
+
+interface ProcessCard {
+  id: string;
+  kind: 'thinking' | 'tool' | 'todo' | 'patch' | 'status';
+  title: string;
+  status?: 'pending' | 'doing' | 'done' | 'error';
+  description?: string;
+  details?: string;
+  items?: ProcessTodoItem[];
+  collapsed?: boolean;
+}
+
 interface AIChatPanelProps {
   userInfo?: {
     name: string;
@@ -79,10 +100,10 @@ interface AIChatPanelProps {
 }
 
 const QUICK_ACTIONS = [
-  '润色当前内容',
-  '更像目标岗位',
-  '压缩为更简洁版本',
+  '按目标岗位强化',
   '补充量化成果',
+  '压缩成一屏可读',
+  '改成更专业表达',
 ];
 
 const SECTION_LABELS: Record<string, string> = {
@@ -179,6 +200,55 @@ const normalizePatch = (payload: unknown): ResumePatch | null => {
   return null;
 };
 
+const extractEventName = (event: CustomEvent) => {
+  const raw = event as unknown as Record<string, unknown>;
+  return String(event.name || raw.name || raw.eventName || '');
+};
+
+const extractEventPayload = (event: CustomEvent) => {
+  const raw = event as unknown as Record<string, unknown>;
+  return event.value ?? event.data ?? raw.value ?? raw.data ?? null;
+};
+
+const normalizeTodoItems = (items: unknown): ProcessTodoItem[] => {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => {
+    if (typeof item === 'string') {
+      return { label: item, status: 'pending' };
+    }
+    const row = item as Record<string, unknown>;
+    const status = String(row.status || 'pending') as ProcessTodoItem['status'];
+    return {
+      label: String(row.label || row.title || '待办事项'),
+      status: ['pending', 'doing', 'done', 'error'].includes(status) ? status : 'pending',
+    };
+  });
+};
+
+const createLocalTodo = (target?: EditTarget | null): ProcessCard => ({
+  id: `todo_${Date.now()}`,
+  kind: 'todo',
+  title: '本轮编辑计划',
+  status: 'doing',
+  items: [
+    { label: `确认编辑目标: ${formatTargetLabel(target)}`, status: 'done' },
+    { label: '读取目标模块原文', status: 'doing' },
+    { label: '匹配模块写法和字段约束', status: 'pending' },
+    { label: '生成最小范围修改', status: 'pending' },
+    { label: '校验排版和可应用性', status: 'pending' },
+  ],
+});
+
+const toolTitleMap: Record<string, string> = {
+  resolveResumeTarget: '确认编辑目标',
+  makeResumeEditTodo: '规划本轮编辑',
+  getResumeSectionKnowledge: '读取模块写法',
+  validateResumePatchPlan: '校验修改方案',
+  read_skill: '读取编辑技能',
+};
+
+const prettyToolTitle = (toolName?: string) => toolTitleMap[toolName || ''] || toolName || '调用工具';
+
 export default function AIChatPanel({
   userInfo,
   resumeData,
@@ -197,8 +267,10 @@ export default function AIChatPanel({
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
+  const [processCards, setProcessCards] = useState<ProcessCard[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const rawAssistantContentRef = useRef<Record<string, string>>({});
+  const toolArgsRef = useRef<Record<string, string>>({});
 
   const saveStatusText = {
     idle: '等待编辑',
@@ -211,7 +283,7 @@ export default function AIChatPanel({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, pendingPatch]);
+  }, [messages, pendingPatch, processCards]);
 
   useEffect(() => {
     if (!draftPrompt) return;
@@ -265,6 +337,17 @@ export default function AIChatPanel({
 
     onUpdateResumeData(updatedResume);
     onPendingPatchChange?.(patchWithPrevious);
+    setProcessCards((prev) => [
+      ...prev,
+      {
+        id: `patch_${Date.now()}`,
+        kind: 'patch',
+        title: '生成可确认改动',
+        status: 'done',
+        description: patch.summary || patch.previewText || 'AI 已生成一轮结构化简历修改。',
+        details: patch.operations?.map((operation) => operation.path).join('\n'),
+      },
+    ]);
     return true;
   }, [onPendingPatchChange, onUpdateResumeData, resumeData]);
 
@@ -307,6 +390,45 @@ export default function AIChatPanel({
     });
   }, [applyIncomingPatch, resumeData]);
 
+  const upsertProcessCard = useCallback((card: ProcessCard) => {
+    setProcessCards((prev) => {
+      const index = prev.findIndex((item) => item.id === card.id);
+      if (index < 0) return [...prev, card];
+      return prev.map((item, currentIndex) => (
+        currentIndex === index ? { ...item, ...card } : item
+      ));
+    });
+  }, []);
+
+  const handleProcessCustomEvent = useCallback((event: CustomEvent) => {
+    const name = extractEventName(event);
+    const payload = extractEventPayload(event);
+
+    if (name === 'resume_todo' && payload && typeof payload === 'object') {
+      const data = payload as Record<string, unknown>;
+      upsertProcessCard({
+        id: 'server_todo',
+        kind: 'todo',
+        title: String(data.title || '本轮编辑待办'),
+        status: 'doing',
+        items: normalizeTodoItems(data.items),
+      });
+      return;
+    }
+
+    if (name === 'resume_thinking' && payload && typeof payload === 'object') {
+      const data = payload as Record<string, unknown>;
+      upsertProcessCard({
+        id: `thinking_${Date.now()}`,
+        kind: 'thinking',
+        title: String(data.title || '分析修改意图'),
+        status: String(data.status || 'done') as ProcessCard['status'],
+        description: String(data.description || ''),
+        collapsed: true,
+      });
+    }
+  }, [upsertProcessCard]);
+
   const sendMessage = useCallback(async (rawInput: string) => {
     const trimmed = rawInput.trim();
     if (!trimmed || isStreaming) return;
@@ -330,6 +452,16 @@ export default function AIChatPanel({
     ]);
     setInput('');
     setIsStreaming(true);
+    setProcessCards([
+      createLocalTodo(activeTarget),
+      {
+        id: `thinking_${Date.now()}`,
+        kind: 'thinking',
+        title: '理解你的修改意图',
+        status: 'doing',
+        description: `目标锁定为「${formatTargetLabel(activeTarget)}」，接下来会结合模块规则生成可确认改动。`,
+      },
+    ]);
 
     const targetHint = activeTarget ? `当前编辑目标：${formatTargetLabel(activeTarget)}` : '当前编辑目标：整份简历';
     let messageContent = `${targetHint}\n用户需求：${trimmed}`;
@@ -342,17 +474,86 @@ export default function AIChatPanel({
       const callbacks: AguiCallbacks = {
         onRunStarted: (event) => {
           setThreadId(event.threadId);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `system_progress_${Date.now()}`,
-              role: 'system',
-              content: `正在帮你处理${formatTargetLabel(activeTarget)}的修改请求，请稍等...`,
-            },
-          ]);
+          upsertProcessCard({
+            id: 'run_status',
+            kind: 'status',
+            title: `正在处理 ${formatTargetLabel(activeTarget)}`,
+            status: 'doing',
+            description: 'AI 正在读取当前简历草稿并规划修改步骤。',
+          });
+        },
+        onStepStarted: (event) => {
+          upsertProcessCard({
+            id: `step_${event.stepName}`,
+            kind: 'status',
+            title: event.stepName || '执行编辑步骤',
+            status: 'doing',
+          });
+        },
+        onStepFinished: (event) => {
+          upsertProcessCard({
+            id: `step_${event.stepName}`,
+            kind: 'status',
+            title: event.stepName || '执行编辑步骤',
+            status: 'done',
+          });
         },
         onTextMessageContent: (event: TextMessageContentEvent) => {
           appendAssistantChunk(messageId, event.delta || '');
+        },
+        onReasoningMessageContent: (event: ReasoningMessageContentEvent) => {
+          const delta = event.delta || '';
+          if (!delta) return;
+          upsertProcessCard({
+            id: 'reasoning_stream',
+            kind: 'thinking',
+            title: '思考摘要',
+            status: 'doing',
+            description: delta,
+            collapsed: true,
+          });
+        },
+        onToolCallStart: (event: ToolCallStartEvent) => {
+          toolArgsRef.current[event.toolCallId] = '';
+          upsertProcessCard({
+            id: `tool_${event.toolCallId}`,
+            kind: 'tool',
+            title: prettyToolTitle(event.toolName),
+            status: 'doing',
+            description: '正在调用简历编辑工具。',
+            collapsed: true,
+          });
+        },
+        onToolCallArgs: (event: ToolCallArgsEvent) => {
+          toolArgsRef.current[event.toolCallId] = (toolArgsRef.current[event.toolCallId] || '') + (event.delta || '');
+          upsertProcessCard({
+            id: `tool_${event.toolCallId}`,
+            kind: 'tool',
+            title: '准备工具参数',
+            status: 'doing',
+            details: toolArgsRef.current[event.toolCallId],
+            collapsed: true,
+          });
+        },
+        onToolCallResult: (event: ToolCallResultEvent) => {
+          upsertProcessCard({
+            id: `tool_${event.toolCallId}`,
+            kind: 'tool',
+            title: '工具返回结果',
+            status: 'done',
+            details: typeof event.result === 'string' ? event.result : JSON.stringify(event.result, null, 2),
+            collapsed: true,
+          });
+        },
+        onToolCallEnd: (event: ToolCallEndEvent) => {
+          upsertProcessCard({
+            id: `tool_${event.toolCallId}`,
+            kind: 'tool',
+            title: '工具调用完成',
+            status: 'done',
+            details: toolArgsRef.current[event.toolCallId],
+            collapsed: true,
+          });
         },
         onStateDelta: (event: StateDeltaEvent) => {
           const patch = normalizePatch(event.delta);
@@ -381,6 +582,7 @@ export default function AIChatPanel({
           }
         },
         onCustomEvent: (event: CustomEvent) => {
+          handleProcessCustomEvent(event);
           const patch = normalizePatch(event.value ?? event.data);
           if (patch && applyIncomingPatch(patch)) {
             setMessages((prev) => [
@@ -395,6 +597,13 @@ export default function AIChatPanel({
         },
         onRunFinished: () => {
           setIsStreaming(false);
+          upsertProcessCard({
+            id: 'run_status',
+            kind: 'status',
+            title: '本轮编辑完成',
+            status: 'done',
+            description: '请检查右侧预览，确认满意后接受改动并点击保存。',
+          });
           finalizeAssistantMessage(messageId);
         },
         onRunError: (event) => {
@@ -438,11 +647,13 @@ export default function AIChatPanel({
     activeTarget,
     appendAssistantChunk,
     finalizeAssistantMessage,
+    handleProcessCustomEvent,
     isStreaming,
     messages.length,
     persistedResume,
     resumeData,
     threadId,
+    upsertProcessCard,
     userInfo,
   ]);
 
@@ -482,6 +693,37 @@ export default function AIChatPanel({
       },
     ]);
   }, [onPendingPatchChange, onUpdateResumeData, pendingPatch]);
+
+  const renderProcessCard = (card: ProcessCard) => {
+    const statusText = {
+      pending: '待处理',
+      doing: '进行中',
+      done: '完成',
+      error: '异常',
+    }[card.status || 'pending'];
+
+    return (
+      <details key={card.id} className={`agui-process-card ${card.kind} status-${card.status || 'pending'}`} open={!card.collapsed}>
+        <summary>
+          <span className="agui-process-icon" />
+          <span className="agui-process-title">{card.title}</span>
+          <span className="agui-process-status">{statusText}</span>
+        </summary>
+        {card.description && <p className="agui-process-description">{card.description}</p>}
+        {!!card.items?.length && (
+          <ul className="agui-todo-list">
+            {card.items.map((item, index) => (
+              <li key={`${item.label}-${index}`} className={`todo-${item.status}`}>
+                <span />
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        )}
+        {card.details && <pre className="agui-process-details">{card.details}</pre>}
+      </details>
+    );
+  };
 
   return (
     <div className="ai-chat-panel">
@@ -537,6 +779,11 @@ export default function AIChatPanel({
             </div>
           </div>
         ))}
+        {!!processCards.length && (
+          <div className="agui-process-stack">
+            {processCards.map(renderProcessCard)}
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 

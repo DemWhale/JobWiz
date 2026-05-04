@@ -111,6 +111,22 @@
   transform-origin: top left;
 }
 
+.resume-preview-container.is-compact {
+  height: 100%;
+  pointer-events: none;
+}
+
+.resume-preview-container.is-compact .resume-preview-stage {
+  height: 100%;
+  padding: 12px;
+  overflow: hidden;
+  background: #eef2f7;
+}
+
+.resume-preview-container.is-compact .resume-preview-canvas {
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
 @media (max-width: 960px) {
   .resume-preview-toolbar {
     flex-wrap: wrap;

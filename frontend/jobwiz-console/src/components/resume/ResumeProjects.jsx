@@ -1,4 +1,4 @@
-const ResumeProjects = ({ items }) => {
+const ResumeProjects = ({ items, activeIndex, onItemClick }) => {
   if (!items || items.length === 0) return null;
 
   return (
@@ -11,7 +11,15 @@ const ResumeProjects = ({ items }) => {
         const detail = item.project_detail || item.summary;
 
         return (
-          <div key={item.id || index} className="resume-timeline-item">
+          <div
+            key={item.id || index}
+            className={`resume-timeline-item ${activeIndex === index ? 'is-active' : ''}`}
+            onClick={(event) => {
+              if (!onItemClick) return;
+              event.stopPropagation();
+              onItemClick(index);
+            }}
+          >
             <div className="resume-timeline-header">
               <span className="resume-timeline-title">{title}</span>
               <span className="resume-timeline-date">{date}</span>

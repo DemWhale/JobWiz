@@ -133,7 +133,7 @@
 
 .resume-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.2s;
@@ -151,6 +151,7 @@
   aspect-ratio: 3 / 4;
   background: #f8f9fa;
   border-bottom: 1px solid #f0f0f0;
+  overflow: hidden;
 }
 
 .thumbnail-preview {
@@ -181,7 +182,7 @@
 }
 
 .resume-info {
-  padding: 16px;
+  padding: 14px 16px 10px;
 }
 
 .resume-title {
@@ -201,22 +202,18 @@
 }
 
 .resume-actions {
-  position: absolute;
-  bottom: 60px;
-  left: 0;
-  right: 0;
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 16px;
+  background: white;
 }
 
 .action-btn {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -240,6 +237,214 @@
 
 .ai-edit-btn:hover {
   background: #1d4ed8;
+}
+
+.delete-btn {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.delete-btn:hover {
+  background: #ffe4e6;
+}
+
+.delete-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.42);
+  padding: 24px;
+}
+
+.delete-dialog {
+  width: min(420px, 100%);
+  border-radius: 8px;
+  background: white;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+}
+
+.delete-dialog h2 {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.delete-dialog p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.delete-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.delete-dialog-actions button {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-dialog-actions button.danger {
+  border-color: #e11d48;
+  background: #e11d48;
+  color: white;
+}
+
+.delete-dialog-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.import-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.42);
+  padding: 24px;
+}
+
+.import-dialog {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border-radius: 8px;
+  background: white;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+}
+
+.import-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.import-dialog-header h2 {
+  margin: 0 0 6px;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.import-dialog-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.import-dialog-header button,
+.import-uploader button,
+.import-dialog-actions button {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.import-dialog-header button:disabled,
+.import-uploader button:disabled,
+.import-dialog-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.import-uploader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.import-uploader input {
+  width: 100%;
+  color: #475569;
+  font-size: 14px;
+}
+
+.import-uploader button,
+.import-dialog-actions button.primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: white;
+}
+
+.import-error {
+  margin-top: 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.import-result {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.import-summary,
+.import-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.import-summary span,
+.import-sections span {
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.import-sections span.missing {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.import-preview {
+  width: min(360px, 100%);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.import-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .fab-button {

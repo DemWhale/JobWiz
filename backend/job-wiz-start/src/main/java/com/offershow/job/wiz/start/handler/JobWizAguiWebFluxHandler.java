@@ -206,6 +206,24 @@ public class JobWizAguiWebFluxHandler {
 
         List<ServerSentEvent<String>> results = new ArrayList<>();
 
+        if (event instanceof AguiEvent.RunStarted) {
+            results.add(customEvent(input, "resume_thinking", Map.of(
+                    "title", "正在理解你的修改目标",
+                    "description", "我会结合右侧选中的模块、当前简历草稿和用户诉求来决定最小修改范围。",
+                    "status", "done"
+            )));
+            results.add(customEvent(input, "resume_todo", Map.of(
+                    "title", "本轮编辑待办",
+                    "items", List.of(
+                            Map.of("label", "确认编辑目标", "status", "done"),
+                            Map.of("label", "读取目标模块原文", "status", "doing"),
+                            Map.of("label", "应用模块编辑规则", "status", "pending"),
+                            Map.of("label", "生成结构化 patch", "status", "pending"),
+                            Map.of("label", "校验字段路径和排版", "status", "pending")
+                    )
+            )));
+        }
+
         if (event instanceof AguiEvent.RunFinished) {
             ResumePatchDTO patch = parsePatchFromText(assistantTextBuffer.toString());
             if (patch != null) {
@@ -222,6 +240,13 @@ public class JobWizAguiWebFluxHandler {
                 .build());
 
         return Flux.fromIterable(results);
+    }
+
+    private ServerSentEvent<String> customEvent(RunAgentInput input, String name, Object value) {
+        AguiEvent.Custom custom = new AguiEvent.Custom(input.getThreadId(), input.getRunId(), name, value);
+        return ServerSentEvent.<String>builder()
+                .data(encoder.encodeToJson(custom).trim())
+                .build();
     }
 
     private void trackAssistantText(AguiEvent event,

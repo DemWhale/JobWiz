@@ -44,51 +44,6 @@ const ResumeEdit = ({ userId }) => {
   // 已持久化的简历 ID（草稿首次保存后才有）
   const effectiveId = savedResumeId || (!isNewDraft ? id : null);
 
-  const fetchTemplateMeta = useCallback(async (templateId) => {
-    try {
-      const template = await resumeTemplateApi.getById(templateId);
-      if (template?.meta) {
-        setTemplateMeta(JSON.parse(template.meta));
-      }
-    } catch {
-      console.log('获取模板信息失败，使用默认布局');
-    }
-  }, []);
-
-  const fetchResume = useCallback(async () => {
-    try {
-      const data = await resumeApi.getById(id);
-      setResume(data);
-
-      let parsed = { content: { modules: [] }, css_config: {} };
-      if (data) {
-        parsed = {
-          content: data.content ? (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : { modules: [] },
-          css_config: data.cssConfig ? (typeof data.cssConfig === 'string' ? JSON.parse(data.cssConfig) : data.cssConfig) : {},
-          template_id: data.templateId,
-          title: data.title,
-          user_id: data.userId,
-          uuid: data.uuid,
-          share_status: data.shareStatus
-        };
-      }
-      setResumeData(parsed);
-      setPersistedResume(parsed);
-      setPendingPatch(null);
-      setActiveTarget(null);
-      setSectionEditorOpen(false);
-      setChangeHistory([]);
-
-      if (data?.templateId) {
-        fetchTemplateMeta(data.templateId);
-      }
-    } catch (error) {
-      console.error('获取简历失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchTemplateMeta, id]);
-
   useEffect(() => {
     if (isNewDraft) {
       // 草稿模式：从 location.state 初始化，无需后端加载
@@ -123,7 +78,9 @@ const ResumeEdit = ({ userId }) => {
 
     if (!id) return;
     fetchResume();
-  }, [fetchResume, fetchTemplateMeta, id, isAIMode, isNewDraft, location.state]);
+  // fetchResume/fetchTemplateMeta are stable enough for this page lifecycle; keeping this effect keyed to route/mode avoids reload loops.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isAIMode]);
 
   // 拖拽分割线逻辑
   useEffect(() => {
@@ -160,6 +117,55 @@ const ResumeEdit = ({ userId }) => {
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
     e.preventDefault();
+  };
+
+  const fetchResume = async () => {
+    try {
+      const data = await resumeApi.getById(id);
+      setResume(data);
+
+      // 解析简历数据 (新 schema)
+      // 后端字段直接对应 data.json 顶层结构
+      let parsed = { content: { modules: [] }, css_config: {} };
+      if (data) {
+        parsed = {
+          content: data.content ? (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : { modules: [] },
+          css_config: data.cssConfig ? (typeof data.cssConfig === 'string' ? JSON.parse(data.cssConfig) : data.cssConfig) : {},
+          template_id: data.templateId,
+          title: data.title,
+          user_id: data.userId,
+          uuid: data.uuid,
+          share_status: data.shareStatus
+        };
+      }
+      setResumeData(parsed);
+      setPersistedResume(parsed);
+      setPendingPatch(null);
+      setActiveTarget(null);
+      setSectionEditorOpen(false);
+      setChangeHistory([]);
+
+      // 获取模板 meta
+      if (data?.templateId) {
+        fetchTemplateMeta(data.templateId);
+      }
+    } catch (error) {
+      console.error('获取简历失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 获取模板 meta（草稿和已有简历共用）
+  const fetchTemplateMeta = async (templateId) => {
+    try {
+      const template = await resumeTemplateApi.getById(templateId);
+      if (template?.meta) {
+        setTemplateMeta(JSON.parse(template.meta));
+      }
+    } catch {
+      console.log('获取模板信息失败，使用默认布局');
+    }
   };
 
   // 手动保存（立即执行，不走防抖）
@@ -212,15 +218,15 @@ const ResumeEdit = ({ userId }) => {
     setSaveStatus((prev) => (prev === 'saving' ? prev : 'dirty'));
   }, []);
 
-  const handleSectionClick = (sectionId) => {
+  const handleSectionClick = (sectionId, itemIndex) => {
     if (isAIMode) {
-      setActiveTarget({ section: sectionId });
+      setActiveTarget(typeof itemIndex === 'number' ? { section: sectionId, itemIndex } : { section: sectionId });
       setSectionEditorOpen(false);
       return;
     }
 
     if (formRef.current) {
-      formRef.current.scrollToSection(sectionId);
+      formRef.current.scrollToSection(typeof itemIndex === 'number' ? `${sectionId}-${itemIndex}` : sectionId);
     }
   };
 
@@ -229,10 +235,13 @@ const ResumeEdit = ({ userId }) => {
   };
 
   const activeSectionLabel = activeTarget?.section ? (SECTION_LABELS[activeTarget.section] || activeTarget.section) : null;
+  const activeTargetLabel = activeSectionLabel
+    ? `${activeSectionLabel}${typeof activeTarget?.itemIndex === 'number' ? ` · 第 ${activeTarget.itemIndex + 1} 条` : ''}`
+    : null;
 
   const handleBubbleAction = (action) => {
-    if (!activeSectionLabel) return;
-    setDraftPrompt(`针对${activeSectionLabel}${action}`);
+    if (!activeTargetLabel) return;
+    setDraftPrompt(`针对${activeTargetLabel}${action}`);
   };
 
   if (loading) {
@@ -313,7 +322,7 @@ const ResumeEdit = ({ userId }) => {
                   <div className="ai-section-bubble">
                     <div className="ai-section-bubble-main">
                       <span className="ai-section-bubble-kicker">已选中</span>
-                      <strong>{activeSectionLabel}</strong>
+                      <strong>{activeTargetLabel}</strong>
                     </div>
                     <div className="ai-section-bubble-actions">
                       <button type="button" onClick={() => handleBubbleAction('润色当前内容')}>
@@ -335,14 +344,16 @@ const ResumeEdit = ({ userId }) => {
                   resumeData={resumeData}
                   templateMeta={templateMeta}
                   activeSectionId={activeTarget?.section}
+                  activeTarget={activeTarget}
                   onSectionClick={handleSectionClick}
+                  onItemClick={handleSectionClick}
                 />
                 {sectionEditorOpen && activeTarget && resumeData && (
                   <div className="ai-floating-editor">
                     <div className="ai-floating-editor-header">
                       <div>
                         <span>手动编辑</span>
-                        <h3>{activeSectionLabel}</h3>
+                        <h3>{activeTargetLabel}</h3>
                       </div>
                       <button type="button" onClick={() => setSectionEditorOpen(false)}>
                         关闭
@@ -353,6 +364,7 @@ const ResumeEdit = ({ userId }) => {
                         resumeData={resumeData}
                         onChange={handleFormChange}
                         visibleSections={[activeTarget.section]}
+                        focusedItem={activeTarget}
                       />
                     </div>
                   </div>
@@ -364,24 +376,21 @@ const ResumeEdit = ({ userId }) => {
           /* 普通模式: 左侧表单 + 右侧预览 */
           <>
             <div className="resume-edit-left">
-              <div className="resume-workspace-panel resume-form-panel">
-                {resumeData && (
-                  <ResumeForm
-                    ref={formRef}
-                    resumeData={resumeData}
-                    onChange={handleFormChange}
-                  />
-                )}
-              </div>
+              {resumeData && (
+                <ResumeForm
+                  ref={formRef}
+                  resumeData={resumeData}
+                  onChange={handleFormChange}
+                />
+              )}
             </div>
             <div className="resume-edit-right">
-              <div className="resume-workspace-panel resume-preview-panel">
                 <ResumePreview
                   resumeData={resumeData}
                   templateMeta={templateMeta}
                   onSectionClick={handleSectionClick}
+                  onItemClick={handleSectionClick}
                 />
-              </div>
             </div>
           </>
         )}

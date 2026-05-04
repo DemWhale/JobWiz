@@ -161,6 +161,31 @@ export const resumeApi = {
       console.error('删除简历失败:', error);
       throw error;
     }
+  },
+
+  /**
+   * 解析导入的 PDF / Word 简历
+   * @param {File} file - 简历文件
+   * @returns {Promise<Object>} 解析结果
+   */
+  parseImport: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.post('/resume/import/parse', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 60000
+      });
+      if (response.data?.success === false) {
+        throw new Error(response.data.message || '解析失败');
+      }
+      return response.data.data;
+    } catch (error) {
+      console.error('导入简历解析失败:', error);
+      throw error;
+    }
   }
 };
 

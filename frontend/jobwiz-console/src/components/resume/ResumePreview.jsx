@@ -52,7 +52,15 @@ const DEFAULT_PAPER_SIZE = {
  * @param {Object} templateMeta - 模板元数据 (可选,向后兼容)
  * @param {Function} onSectionClick - 模块点击回调
  */
-const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSectionId }) => {
+const ResumePreview = ({
+  resumeData,
+  templateMeta,
+  onSectionClick,
+  onItemClick,
+  activeSectionId,
+  activeTarget,
+  compact = false,
+}) => {
   const containerRef = useRef(null);
   const paperRef = useRef(null);
   const [zoomMode, setZoomMode] = useState('fit');
@@ -152,10 +160,18 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSection
         props = { items: childData };
         break;
       case 'workbg':
-        props = { items: childData };
+        props = {
+          items: childData,
+          activeIndex: activeTarget?.section === module.name ? activeTarget.itemIndex : undefined,
+          onItemClick: (index) => onItemClick?.(module.name, index),
+        };
         break;
       case 'projectabout':
-        props = { items: childData };
+        props = {
+          items: childData,
+          activeIndex: activeTarget?.section === module.name ? activeTarget.itemIndex : undefined,
+          onItemClick: (index) => onItemClick?.(module.name, index),
+        };
         break;
       case 'skills':
         props = { htmlContent: childData[0]?.skills };
@@ -173,7 +189,7 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSection
         sectionId={module.name}
         name={moduleName}
         visible={module.is_open !== false}
-        active={activeSectionId === module.name}
+        active={activeSectionId === module.name && activeTarget?.itemIndex === undefined}
         onAnchorClick={onSectionClick}
       >
         <Component {...props} />
@@ -186,7 +202,8 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSection
   const baseinfoData = baseinfo?.child?.[0] || {};
 
   return (
-    <div className="resume-preview-container">
+    <div className={`resume-preview-container ${compact ? 'is-compact' : ''}`}>
+      {!compact && (
       <div className="resume-preview-toolbar">
         <div className="resume-preview-toolbar-label">预览缩放</div>
         <div className="resume-preview-zoom-group">
@@ -232,6 +249,7 @@ const ResumePreview = ({ resumeData, templateMeta, onSectionClick, activeSection
           {`${Math.round(scale * 100)}%`}
         </div>
       </div>
+      )}
 
       <div className="resume-preview-stage" ref={containerRef}>
         <div

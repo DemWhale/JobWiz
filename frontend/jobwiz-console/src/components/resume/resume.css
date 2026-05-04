@@ -146,6 +146,19 @@
 .resume-timeline-item {
   position: relative;
   padding-left: 0;
+  border-radius: 6px;
+  transition: background 0.2s ease, outline 0.2s ease, box-shadow 0.2s ease;
+}
+
+.resume-timeline-item:hover {
+  background: rgba(37, 99, 235, 0.035);
+}
+
+.resume-timeline-item.is-active {
+  outline: 2px solid var(--resume-theme-primary);
+  outline-offset: 3px;
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
 }
 
 .resume-timeline-header {
