@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   aguiClient,
   type AguiCallbacks,
@@ -70,6 +70,8 @@ interface AIChatPanelProps {
   pendingPatch?: ResumePatch | null;
   activeTarget?: EditTarget | null;
   saveStatus?: 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'draft';
+  draftPrompt?: string;
+  onDraftPromptConsumed?: () => void;
   onPendingPatchChange?: (patch: ResumePatch | null) => void;
   onActiveTargetChange?: (target: EditTarget | null) => void;
   onChangeHistory?: (updater: (prev: ResumePatch[]) => ResumePatch[]) => void;
@@ -122,6 +124,11 @@ const parsePatchFromContent = (content: string): ResumePatch | null => {
     console.warn('解析 resume_patch 失败:', error);
     return null;
   }
+};
+
+const sanitizeAssistantDisplay = (content: string) => {
+  if (!content) return '';
+  return content.replace(/```json[\s\S]*$/i, '').trimEnd();
 };
 
 const applyPatchToResume = (resume: ResumeData, patch: ResumePatch): ResumeData | null => {
@@ -179,6 +186,8 @@ export default function AIChatPanel({
   pendingPatch,
   activeTarget,
   saveStatus = 'idle',
+  draftPrompt,
+  onDraftPromptConsumed,
   onPendingPatchChange,
   onActiveTargetChange,
   onChangeHistory,
@@ -189,6 +198,7 @@ export default function AIChatPanel({
   const [isStreaming, setIsStreaming] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const rawAssistantContentRef = useRef<Record<string, string>>({});
 
   const saveStatusText = {
     idle: '等待编辑',
@@ -199,18 +209,15 @@ export default function AIChatPanel({
     draft: '草稿模式',
   }[saveStatus];
 
-  const sectionOptions = useMemo(() => {
-    return (resumeData?.content?.modules || [])
-      .filter((module) => SECTION_LABELS[module.name])
-      .map((module) => ({
-        section: module.name,
-        label: SECTION_LABELS[module.name] || module.modulename || module.name,
-      }));
-  }, [resumeData]);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, pendingPatch]);
+
+  useEffect(() => {
+    if (!draftPrompt) return;
+    setInput(draftPrompt);
+    onDraftPromptConsumed?.();
+  }, [draftPrompt, onDraftPromptConsumed]);
 
   useEffect(() => {
     if (messages.length > 0) return;
@@ -236,9 +243,11 @@ export default function AIChatPanel({
   }, [messages.length, userInfo]);
 
   const appendAssistantChunk = useCallback((messageId: string, delta: string) => {
+    rawAssistantContentRef.current[messageId] = (rawAssistantContentRef.current[messageId] || '') + (delta || '');
+    const displayContent = sanitizeAssistantDisplay(rawAssistantContentRef.current[messageId]);
     setMessages((prev) => prev.map((msg) => (
       msg.id === messageId
-        ? { ...msg, content: msg.content + (delta || '') }
+        ? { ...msg, content: displayContent }
         : msg
     )));
   }, []);
@@ -265,12 +274,12 @@ export default function AIChatPanel({
         msg.id === messageId ? { ...msg, streaming: false } : msg
       ));
 
-      const assistantMessage = next.find((msg) => msg.id === messageId);
-      if (!assistantMessage?.content || !resumeData) {
+      const rawContent = rawAssistantContentRef.current[messageId] || '';
+      if (!rawContent || !resumeData) {
         return next;
       }
 
-      const parsedPatch = parsePatchFromContent(assistantMessage.content);
+      const parsedPatch = parsePatchFromContent(rawContent);
       if (!parsedPatch) {
         return next;
       }
@@ -333,6 +342,14 @@ export default function AIChatPanel({
       const callbacks: AguiCallbacks = {
         onRunStarted: (event) => {
           setThreadId(event.threadId);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `system_progress_${Date.now()}`,
+              role: 'system',
+              content: `正在帮你处理${formatTargetLabel(activeTarget)}的修改请求，请稍等...`,
+            },
+          ]);
         },
         onTextMessageContent: (event: TextMessageContentEvent) => {
           appendAssistantChunk(messageId, event.delta || '');
@@ -481,23 +498,16 @@ export default function AIChatPanel({
           正在编辑：<strong>{formatTargetLabel(activeTarget)}</strong>
         </div>
         <div className="chat-target-actions">
-          {sectionOptions.map((option) => (
+          <span className="chat-target-hint">点右侧简历模块可切换目标</span>
+          {activeTarget && (
             <button
-              key={option.section}
               type="button"
-              className={`chat-target-chip ${activeTarget?.section === option.section ? 'active' : ''}`}
-              onClick={() => onActiveTargetChange?.({ section: option.section })}
+              className="chat-target-chip ghost"
+              onClick={() => onActiveTargetChange?.(null)}
             >
-              {option.label}
+              清空目标
             </button>
-          ))}
-          <button
-            type="button"
-            className="chat-target-chip ghost"
-            onClick={() => onActiveTargetChange?.(null)}
-          >
-            清空目标
-          </button>
+          )}
         </div>
       </div>
 

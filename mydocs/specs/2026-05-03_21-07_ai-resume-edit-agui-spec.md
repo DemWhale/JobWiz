@@ -458,12 +458,16 @@ AGUI `forwardedProps.agentContext` 建议扩展为：
 
 ## Change Log
 
+- 2026-05-04 01:32 产品纠偏：AI 编辑页必须保持“左侧始终是聊天框”的核心形态；右侧模块选择后的快捷动作、手动编辑能力必须以气泡或浮层呈现，不能把表单常驻塞进左侧。
 - 已修改 `ResumeEdit.jsx`：移除编辑后的自动保存触发，改为仅在点击保存按钮时调用持久化。
 - 已修改 `ResumeEdit.jsx`：增加 `persistedResume`、`pendingPatch` 和 `dirty saveStatus` 的前端状态骨架。
 - 已修改 `AIChatPanel.tsx` 与 `AIChatPanel.css`：接入 AI 模式下的保存状态展示，为后续 patch 驱动交互做准备。
 - 已修改 `ResumeEdit.jsx`、`ResumePreview.jsx`、`ResumeSectionWrapper.jsx` 与 `resume.css`：支持 AI 模式下点击右侧 section 锁定当前编辑目标，并在预览中高亮。
 - 已修改 `AIChatPanel.tsx` 与 `AIChatPanel.css`：升级为 AI 编辑工作区，增加目标条、快捷动作、pending patch 卡片、接受/撤销入口。
 - 已修改 `AIChatPanel.tsx`：支持从 AGUI `CUSTOM / STATE_DELTA / STATE_SNAPSHOT` 以及文本中的 JSON code block 解析 `resume_patch`。
+- 已回滚上一条交互方向：AI 模式下不再把模块表单常驻渲染到左侧；后续应改为右侧选中模块后的悬浮操作气泡，并按需打开浮层表单。
+- 已修改 `AIChatPanel.tsx`：前端保留原始流内容用于 patch 解析，但展示给用户的只保留可读解释文本，隐藏原始 JSON 代码块。
+- 已修改 `AIChatPanel.tsx` 与 `AIChatPanel.css`：增加“正在处理模块修改请求”的系统提示样式，改善 AGUI 过程反馈。
 - 已完成前端 `npm run lint` 与 `npm run build` 验证，通过。
 
 ## Validation
@@ -474,3 +478,18 @@ AGUI `forwardedProps.agentContext` 建议扩展为：
   - AI 模式左侧显示 `草稿未保存 / 保存中 / 已保存`
   - 点击右侧 section 后，左侧目标条切换并高亮当前编辑目标
   - 若 AGUI 返回结构化 patch，右侧草稿自动更新，左侧出现待确认改动卡片
+
+## Current Correction Contract
+
+- 左侧：始终只承载 AI 聊天、消息、快捷提示、改动确认，不再常驻表单。
+- 右侧：点击简历模块后，在预览上方显示轻量模块气泡，提供 AI 快捷动作与“手动编辑”入口。
+- 手动编辑：以右侧浮层/抽屉打开对应模块表单，关闭后回到纯预览；表单修改仍实时更新草稿。
+- 验证：AI 页面可打开；左侧聊天高度完整；点击右侧模块出现气泡；点击手动编辑出现浮层表单；关闭浮层后左侧仍是聊天框。
+
+## 2026-05-04 Correction Validation
+
+- `npm run lint`：通过。
+- `npm run build`：通过。
+- 浏览器验证 `/resume/edit/1?mode=ai`：页面可打开，未复现崩溃。
+- 产品验证：左侧保持完整聊天区，不再常驻模块表单；右侧点击 `项目经历` 后出现 `已选中 项目经历` 气泡。
+- 交互验证：气泡中的 `AI 润色` 会把 `针对项目经历润色当前内容` 填入左侧输入框；`手动编辑` 会在右侧打开项目经历浮层表单；点击 `关闭` 后返回预览，左侧聊天形态不变。

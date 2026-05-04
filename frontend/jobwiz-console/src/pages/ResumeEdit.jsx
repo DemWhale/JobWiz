@@ -6,6 +6,17 @@ import ResumeForm from '../components/resume/ResumeForm';
 import AIChatPanel from '../components/resume/AIChatPanel';
 import './ResumeEdit.css';
 
+const SECTION_LABELS = {
+  baseinfo: '基本信息',
+  interestabout: '求职意向',
+  eduabout: '教育背景',
+  workbg: '工作经历',
+  projectabout: '项目经历',
+  self_comment: '自我评价',
+  skills: '专业技能',
+  awardsabout: '荣誉奖项',
+};
+
 const ResumeEdit = ({ userId }) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,6 +29,8 @@ const ResumeEdit = ({ userId }) => {
   const [persistedResume, setPersistedResume] = useState(null);
   const [pendingPatch, setPendingPatch] = useState(null);
   const [activeTarget, setActiveTarget] = useState(null);
+  const [sectionEditorOpen, setSectionEditorOpen] = useState(false);
+  const [draftPrompt, setDraftPrompt] = useState('');
   const [, setChangeHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'draft'
@@ -63,6 +76,7 @@ const ResumeEdit = ({ userId }) => {
       setPersistedResume(parsed);
       setPendingPatch(null);
       setActiveTarget(null);
+      setSectionEditorOpen(false);
       setChangeHistory([]);
 
       if (data?.templateId) {
@@ -201,6 +215,7 @@ const ResumeEdit = ({ userId }) => {
   const handleSectionClick = (sectionId) => {
     if (isAIMode) {
       setActiveTarget({ section: sectionId });
+      setSectionEditorOpen(false);
       return;
     }
 
@@ -211,6 +226,13 @@ const ResumeEdit = ({ userId }) => {
 
   const handleBack = () => {
     navigate('/resumes');
+  };
+
+  const activeSectionLabel = activeTarget?.section ? (SECTION_LABELS[activeTarget.section] || activeTarget.section) : null;
+
+  const handleBubbleAction = (action) => {
+    if (!activeSectionLabel) return;
+    setDraftPrompt(`针对${activeSectionLabel}${action}`);
   };
 
   if (loading) {
@@ -257,6 +279,8 @@ const ResumeEdit = ({ userId }) => {
                 pendingPatch={pendingPatch}
                 activeTarget={activeTarget}
                 saveStatus={saveStatus}
+                draftPrompt={draftPrompt}
+                onDraftPromptConsumed={() => setDraftPrompt('')}
                 onPendingPatchChange={setPendingPatch}
                 onActiveTargetChange={setActiveTarget}
                 onChangeHistory={setChangeHistory}
@@ -285,12 +309,54 @@ const ResumeEdit = ({ userId }) => {
                 </button>
               </div>
               <div className="resume-preview-content">
+                {activeTarget && (
+                  <div className="ai-section-bubble">
+                    <div className="ai-section-bubble-main">
+                      <span className="ai-section-bubble-kicker">已选中</span>
+                      <strong>{activeSectionLabel}</strong>
+                    </div>
+                    <div className="ai-section-bubble-actions">
+                      <button type="button" onClick={() => handleBubbleAction('润色当前内容')}>
+                        AI 润色
+                      </button>
+                      <button type="button" onClick={() => handleBubbleAction('补充量化成果')}>
+                        量化成果
+                      </button>
+                      <button type="button" onClick={() => handleBubbleAction('压缩为更简洁版本')}>
+                        压缩
+                      </button>
+                      <button type="button" className="ghost" onClick={() => setSectionEditorOpen(true)}>
+                        手动编辑
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <ResumePreview
                   resumeData={resumeData}
                   templateMeta={templateMeta}
                   activeSectionId={activeTarget?.section}
                   onSectionClick={handleSectionClick}
                 />
+                {sectionEditorOpen && activeTarget && resumeData && (
+                  <div className="ai-floating-editor">
+                    <div className="ai-floating-editor-header">
+                      <div>
+                        <span>手动编辑</span>
+                        <h3>{activeSectionLabel}</h3>
+                      </div>
+                      <button type="button" onClick={() => setSectionEditorOpen(false)}>
+                        关闭
+                      </button>
+                    </div>
+                    <div className="ai-floating-editor-body">
+                      <ResumeForm
+                        resumeData={resumeData}
+                        onChange={handleFormChange}
+                        visibleSections={[activeTarget.section]}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </>

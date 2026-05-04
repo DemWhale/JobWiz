@@ -248,6 +248,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  position: relative;
 }
 
 /* 右侧简历容器 */
@@ -270,6 +271,134 @@
   width: 40%;
   min-width: 400px;
   background: white;
+}
+
+.ai-section-bubble {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto 12px;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.ai-section-bubble-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: #0f172a;
+}
+
+.ai-section-bubble-kicker {
+  font-size: 12px;
+  color: #2563eb;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ai-section-bubble-main strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-section-bubble-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ai-section-bubble-actions button {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ai-section-bubble-actions button.ghost {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.ai-floating-editor {
+  position: absolute;
+  top: 76px;
+  left: 24px;
+  right: 24px;
+  z-index: 30;
+  max-width: 760px;
+  max-height: calc(100% - 112px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
+}
+
+.ai-floating-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.ai-floating-editor-header span {
+  display: block;
+  margin-bottom: 2px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ai-floating-editor-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ai-floating-editor-header button {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #334155;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ai-floating-editor-body {
+  overflow: auto;
+  padding: 0;
+}
+
+.ai-floating-editor-body .resume-form {
+  padding: 16px;
 }
 
 .ai-chat-panel {
