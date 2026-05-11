@@ -1,7 +1,15 @@
-import { Search, PenLine, Target, GraduationCap, Route } from 'lucide-react';
+import { Search, PenLine, Target, GraduationCap, Route, Landmark } from 'lucide-react';
 import './ChatWindow.css';
 
 const serviceCards = [
+  {
+    id: 'social-security',
+    icon: Landmark,
+    title: '社保查询',
+    desc: '实时查询各城市社保上下限',
+    color: '#0f766e',
+    bgColor: '#ecfeff',
+  },
   {
     id: 'resume-diagnosis',
     icon: Search,

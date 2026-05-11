@@ -45,3 +45,27 @@ Content-Type: application/json
     }
   ]
 }
+
+### 测试社保上下限查询 Agent
+POST http://localhost:8080/agui/run/social-security
+Content-Type: application/json
+
+{
+  "threadId": "test-social-security-7868768",
+  "runId": "run-social-security-9799",
+  "messages": [
+    {
+      "id": "msg-1",
+      "role": "user",
+      "content": "查询上海 2025 社保缴费基数上下限，优先官方来源，并说明医保是否单独口径"
+    }
+  ],
+  "forwardedProps": {
+    "userId": "1",
+    "agentContext": {
+      "city": "上海",
+      "period": "2025",
+      "insuranceType": "社保"
+    }
+  }
+}
